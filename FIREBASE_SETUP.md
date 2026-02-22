@@ -32,3 +32,17 @@ Or in Firebase Console → Firestore → Rules, paste the contents of `firestore
 ## 4. Optional: Firestore index
 
 If the leaderboard query fails, Firebase will show an error with a link to create the index. For `orderBy('finalValue', 'desc')`, a single-field index is usually created automatically.
+
+## 5. Secure your API key (important for public deploys)
+
+Firebase API keys appear in the built JavaScript—that's expected for web apps. To limit abuse:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Credentials → your API key
+2. Under **Application restrictions**, choose **HTTP referrers**
+3. Add allowed sites, e.g.:
+   - `https://*.github.io/ebsic/*`
+   - `https://canavarr.github.io/ebsic/*` (your actual GitHub Pages URL)
+   - `http://localhost:*` and `http://127.0.0.1:*` (for local dev)
+4. Save
+
+Firestore rules (step 3) protect your data; API restrictions reduce unauthorized usage.

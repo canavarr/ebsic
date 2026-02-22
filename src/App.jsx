@@ -4,6 +4,7 @@ import { db } from './firebase'
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 const LANG_KEY = 'ebsic_lang'
+const BASE = import.meta.env.BASE_URL
 
 const T = {
   et: {
@@ -282,7 +283,7 @@ function Navbar({ dark }) {
       borderBottom: dark ? 'none' : '1px solid #E8EAF0',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 14 }}>
-        <img src="/icons/ebs.svg" alt="EBS" style={{ width: 38, height: 35 }} />
+        <img src={`${BASE}icons/ebs.svg`} alt="EBS" style={{ width: 38, height: 35 }} />
         <span style={{ ...F, fontSize: mobile ? 13 : 15, fontWeight: 500, color: textColor }}>{t.navClub}</span>
       </div>
       <button onClick={() => setLang(lang === 'et' ? 'en' : 'et')} style={{ ...F, display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', fontSize: 14, fontWeight: 700, color: textColor, cursor: 'pointer' }}>
@@ -308,7 +309,7 @@ function Logo({ ticker, size = 46 }) {
         background: C.bg,
       }}>
         <img
-          src={`/icons/${iconFile}.png`}
+          src={`${BASE}icons/${iconFile}.png`}
           alt=""
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

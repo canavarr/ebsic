@@ -89,10 +89,15 @@ function toSlug(name) {
 
 async function isPortfolioNameTaken(name) {
   if (!db) return false
-  const slug = toSlug(name || 'portfolio')
-  const ref = doc(db, LEADERBOARD_COLLECTION, slug)
-  const snap = await getDoc(ref)
-  return snap.exists()
+  try {
+    const slug = toSlug(name || 'portfolio')
+    const ref = doc(db, LEADERBOARD_COLLECTION, slug)
+    const snap = await getDoc(ref)
+    return snap.exists()
+  } catch (e) {
+    console.warn('isPortfolioNameTaken failed:', e)
+    return false
+  }
 }
 
 function getLeaderboardLocal() {
@@ -529,6 +534,9 @@ function Landing({ onStart }) {
         return
       }
       onStart({ name, investors: inv })
+    } catch (err) {
+      console.warn('Name check failed, allowing through:', err)
+      onStart({ name, investors: inv })
     } finally {
       setChecking(false)
     }
@@ -569,7 +577,7 @@ function Landing({ onStart }) {
               <input value={inv} onChange={e => setInv(e.target.value)} style={{ display: 'block', width: '100%', height: 46, border: '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button onClick={handleStart} disabled={checking} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}>
+              <button type="button" onClick={handleStart} disabled={checking} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}>
                 {checking ? t.formChecking : t.formOpen} {!checking && <RocketIcon color="#1F3C8E" size={18} />}
               </button>
             </div>

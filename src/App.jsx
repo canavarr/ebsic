@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { db } from './firebase'
+import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 const LANG_KEY = 'ebsic_lang'
 
@@ -17,6 +19,8 @@ const T = {
     landingQuestion: "Kas sinu tiim suudab ehitada portfelli, mis elab üle kriisid ja leiab üles tuleviku võitjad?",
     formStart: 'Alusta mängu', formPortfolioName: 'Portfelli nimi', formInvestors: 'Investorid',
     formOpen: 'Ava portfell', formDefaultPortfolio: 'Portfell',
+    formNameTaken: 'See portfelli nimi on juba kasutusel',
+    formChecking: 'Kontrollin...',
     sectionStocks: 'Aktsiad', sectionCrypto: 'Krüptoraha', sectionCommodities: 'Toorained',
     confirmTitle: 'Oled kindel?', confirmYes: 'Kinnita', confirmNo: 'Tühista', confirmPortfolio: 'Kinnita portfell',
     resultsPositions: 'Portfelli positsioonid', resultsInvested: 'investeeritud',
@@ -39,6 +43,8 @@ const T = {
     landingQuestion: "Can your team build a portfolio that survives the crises and finds the future winners?",
     formStart: 'Start game', formPortfolioName: 'Portfolio name', formInvestors: 'Investors',
     formOpen: 'Open portfolio', formDefaultPortfolio: 'Portfolio',
+    formNameTaken: 'This portfolio name is already taken',
+    formChecking: 'Checking...',
     sectionStocks: 'Stocks', sectionCrypto: 'Cryptocurrencies', sectionCommodities: 'Commodities',
     confirmTitle: 'Are you sure?', confirmYes: 'Confirm', confirmNo: 'Cancel', confirmPortfolio: 'Confirm portfolio',
     resultsPositions: 'Portfolio positions', resultsInvested: 'invested',
@@ -73,7 +79,55 @@ function useIsMobile() {
 const INITIAL_BUDGET = 10000
 const MAX_PER_ASSET = 2000 // max € per individual asset (e.g. 1000 to Bitcoin, 1000 to Apple)
 const LEADERBOARD_KEY = 'ebsic_leaderboard'
+const LEADERBOARD_COLLECTION = 'leaderboard'
 const CASH_2025_MULTIPLIER = 0.68
+
+function toSlug(name) {
+  const s = (name || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-äöüõ]/gi, '').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  return s || 'portfolio'
+}
+
+async function isPortfolioNameTaken(name) {
+  if (!db) return false
+  const slug = toSlug(name || 'portfolio')
+  const ref = doc(db, LEADERBOARD_COLLECTION, slug)
+  const snap = await getDoc(ref)
+  return snap.exists()
+}
+
+function getLeaderboardLocal() {
+  try {
+    const raw = localStorage.getItem(LEADERBOARD_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+async function getLeaderboard() {
+  if (!db) return getLeaderboardLocal()
+  const col = collection(db, LEADERBOARD_COLLECTION)
+  const q = query(col, orderBy('finalValue', 'desc'), limit(50))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
+}
+
+function addToLeaderboardLocal(entry) {
+  const list = getLeaderboardLocal()
+  list.push(entry)
+  list.sort((a, b) => b.finalValue - a.finalValue)
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, 50)))
+}
+
+async function addToLeaderboard(entry) {
+  const slug = toSlug(entry.teamName)
+  const docEntry = { ...entry, slug }
+  if (db) {
+    await setDoc(doc(db, LEADERBOARD_COLLECTION, slug), docEntry)
+  } else {
+    addToLeaderboardLocal(entry)
+  }
+}
 const TIMELINE_YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 
 const C = {
@@ -172,21 +226,6 @@ const TICKER_ICON = {
   TSLA: 'TSLA', UBER: 'UBER', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT', CASH: 'CASH',
 }
 
-function getLeaderboard() {
-  try {
-    const raw = localStorage.getItem(LEADERBOARD_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function addToLeaderboard(entry) {
-  const list = getLeaderboard()
-  list.push(entry)
-  list.sort((a, b) => b.finalValue - a.finalValue)
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, 50)))
-}
 
 const F = { fontFamily: 'Mulish,sans-serif' }
 if (typeof document !== 'undefined') {

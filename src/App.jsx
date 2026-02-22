@@ -83,7 +83,7 @@ const LEADERBOARD_COLLECTION = 'leaderboard'
 const CASH_2025_MULTIPLIER = 0.68
 
 function toSlug(name) {
-  const s = (name || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-äöüõ]/gi, '').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  const s = (name || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9äöüõ-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '')
   return s || 'portfolio'
 }
 
@@ -516,6 +516,23 @@ function Landing({ onStart }) {
   const mobile = useIsMobile()
   const [n, setN] = useState('')
   const [inv, setInv] = useState('')
+  const [checking, setChecking] = useState(false)
+  const [nameError, setNameError] = useState('')
+  const handleStart = async () => {
+    const name = n.trim() || t.formDefaultPortfolio
+    setNameError('')
+    setChecking(true)
+    try {
+      const taken = await isPortfolioNameTaken(name)
+      if (taken) {
+        setNameError(t.formNameTaken)
+        return
+      }
+      onStart({ name, investors: inv })
+    } finally {
+      setChecking(false)
+    }
+  }
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.navy, display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: C.white, borderBottom: '1px solid #e8eaf0', flexShrink: 0 }}>
@@ -544,15 +561,16 @@ function Landing({ onStart }) {
             <div style={{ ...F, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1F3C8E', marginBottom: 28 }}>{t.formStart}</div>
             <div style={{ marginBottom: 16 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formPortfolioName} *</div>
-              <input value={n} onChange={e => setN(e.target.value)} style={{ display: 'block', width: '100%', height: 46, border: '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
+              <input value={n} onChange={e => { setN(e.target.value); setNameError(''); }} style={{ display: 'block', width: '100%', height: 46, border: nameError ? '2px solid #D64045' : '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
+              {nameError && <div style={{ ...F, fontSize: 12, color: '#D64045', marginTop: 6 }}>{nameError}</div>}
             </div>
             <div style={{ marginBottom: 32 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formInvestors}</div>
               <input value={inv} onChange={e => setInv(e.target.value)} style={{ display: 'block', width: '100%', height: 46, border: '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button onClick={() => onStart({ name: n.trim() || t.formDefaultPortfolio, investors: inv })} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                {t.formOpen} <RocketIcon color="#1F3C8E" size={18} />
+              <button onClick={handleStart} disabled={checking} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}>
+                {checking ? t.formChecking : t.formOpen} {!checking && <RocketIcon color="#1F3C8E" size={18} />}
               </button>
             </div>
           </div>
@@ -724,11 +742,14 @@ function Results({ name, investors, portfolio, onReset }) {
   useEffect(() => {
     if (addedRef.current) return
     addedRef.current = true
-    addToLeaderboard({ teamName: name, teamMembers: investors, finalValue: totFin, profitPercent: pct, timestamp: Date.now() })
-    setLeaderboard(getLeaderboard())
+    ;(async () => {
+      await addToLeaderboard({ teamName: name, teamMembers: investors, finalValue: totFin, profitPercent: pct, timestamp: Date.now() })
+      const list = await getLeaderboard()
+      setLeaderboard(list.sort((a, b) => b.finalValue - a.finalValue).slice(0, 50))
+    })()
   }, [])
 
-  const board = getLeaderboard().sort((a, b) => b.finalValue - a.finalValue).slice(0, 50)
+  const board = leaderboard
   const resultCards = [
     ...assetValues.map(({ asset, investedAmount, finalValue }) => ({
       id: asset.id,

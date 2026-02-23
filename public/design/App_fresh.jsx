@@ -83,6 +83,7 @@ const STOCKS = [
   {id:"AMD",name:"Advanced Micro Devices Inc.",price:2.50,ticker:"AMD",country:"USA",desc:"AMD disainib protsessoreid ning graafikakaarte arvutitele ja andmekeskustele."},
   {id:"AMZN",name:"Amazon.com Inc.",price:15,ticker:"AMZN",country:"USA",desc:"Amazon on e-kaubanduse ja pilveteenuste globaalne liider."},
   {id:"ASML",name:"ASML Holding NV",price:90,ticker:"ASML",country:"Holland",desc:"ASML toodab litograafiasüsteeme pooljuhtide tootmiseks."},
+  {id:"CS",name:"Credit Suisse Group",price:21,ticker:"CS",country:"Šveits",desc:"Üks maailma prestiižsemaid panku, mis pakub ülimat Šveitsi stabiilsust ja globaalset varahaldust."},
   {id:"DIS",name:"Walt Disney Company",price:27,ticker:"DIS",country:"USA",desc:"Disney on meelelahutuse, meedia ja teemaparkide maailmaettevõte."},
   {id:"EGR1T",name:"Enefit Green AS",price:2.90,ticker:"EGR1T",country:"Eesti",desc:"Enefit Green toodab taastuvenergiat tuule- ja päikeseenergia abil."},
   {id:"GOOG",name:"Alphabet Inc.",price:26,ticker:"GOOG",country:"USA",desc:"Alphabet on Google'i emaettevõte — otsingumootorite ja pilveplatvormide liider."},
@@ -93,12 +94,15 @@ const STOCKS = [
   {id:"NFLX",name:"Netflix Inc.",price:49,ticker:"NFLX",country:"USA",desc:"Netflix on videovoogedastuse maailmaliider."},
   {id:"NIO",name:"NIO Inc.",price:6.26,ticker:"NIO",country:"Hiina",desc:"NIO disainib ja toodab premium-elektriautosid Hiinas."},
   {id:"NKE",name:"Nike Inc.",price:46,ticker:"NKE",country:"USA",desc:"Nike on spordirõivaste ja jalatsitootmise maailmaliider."},
+  {id:"NOKIA",name:"Nokia Oyj",price:6.80,ticker:"NOKIA",country:"Soome",desc:"Maailma juhtiv 5G võrkude arendaja. Ettevõte on edukalt väljunud mobiiliärist ja keskendub nüüd tuleviku infrastruktuurile."},
   {id:"NVO",name:"Novo Nordisk A/S",price:18,ticker:"NVO",country:"Taani",desc:"Novo Nordisk on diabeedi- ja rasvumisravimite juhtiv tootja."},
+  {id:"PTON",name:"Peloton Interactive Inc.",price:25.10,ticker:"PTON",country:"USA",desc:"Revolutsiooniline treeningtehnoloogia, mis toob jõusaali elamuse otse sinu elutuppa läbi tipptasemel riistvara."},
   {id:"SAP",name:"SAP SE",price:58,ticker:"SAP",country:"Saksamaa",desc:"SAP toodab ettevõttetarkvara ja äriprotsessihalduse lahendusi."},
   {id:"TAL1T",name:"Tallink Grupp AS",price:0.90,ticker:"TAL1T",country:"Eesti",desc:"Tallink Grupp pakub laevandus- ja reisiteenuseid Läänemere piirkonnas."},
   {id:"TKM1T",name:"TKM Grupp AS",price:0.77,ticker:"TKM1T",country:"Eesti",desc:"TKM Grupp haldab Kaubamaja ja Selver kette Eestis."},
   {id:"TSLA",name:"Tesla Inc.",price:14,ticker:"TSLA",country:"USA",desc:"Tesla toodab elektriautosid ja energiasalvestussüsteeme."},
   {id:"UBER",name:"Uber Technologies Inc.",price:45,ticker:"UBER",country:"USA",desc:"Uber pakub sõidujagamise ja toidukulleri teenuseid üle maailma."},
+  {id:"WDI",name:"Wirecard AG",price:39.80,ticker:"WDI",country:"Saksamaa",desc:"Saksamaa kiireima kasvuga finantstehnoloogia (Fintech) ettevõte, mis muudab digitaalsed maksed globaalseks standardiks."},
 ];
 const CRYPTO = [
   {id:"BTC",name:"Bitcoin",price:320,ticker:"BTC",country:"Krüpto",desc:"Bitcoin on maailma esimene ja suurim krüptoraha, loodud 2009."},
@@ -111,9 +115,9 @@ const COMMODITIES = [
 const ALL = [...STOCKS,...CRYPTO,...COMMODITIES];
 
 const MULT = {
-  AAPL:7.04,AMD:75,AMZN:7,ASML:12,DIS:1.3,EGR1T:1.8,GOOG:5,LHV1T:9,
-  MCD:2.8,META:4.5,MSFT:8.2,NFLX:3.5,NIO:0.8,NKE:2,NVO:15,SAP:3.2,
-  TAL1T:0.9,TKM1T:1.6,TSLA:14,UBER:2,BTC:200,XRP:1.2,XAU:1.7,BRENT:1.1,CASH:0.68,
+  AAPL:7.04,AMD:75,AMZN:7,ASML:12,CS:0.369,DIS:1.3,EGR1T:1.8,GOOG:5,LHV1T:9,
+  MCD:2.8,META:4.5,MSFT:8.2,NFLX:3.5,NIO:0.8,NKE:2,NOKIA:0.66,NVO:15,PTON:0.032,SAP:3.2,
+  TAL1T:0.9,TKM1T:1.6,TSLA:14,UBER:2,WDI:0.0005,BTC:200,XRP:1.2,XAU:1.7,BRENT:1.1,CASH:0.68,
 };
 const YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
 const RIVALS = [

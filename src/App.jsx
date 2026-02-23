@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
-import { db } from './firebase'
+import { db, analytics } from './firebase'
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { logEvent } from 'firebase/analytics'
 
 const LANG_KEY = 'ebsic_lang'
 const BASE = import.meta.env.BASE_URL
@@ -861,6 +862,12 @@ export default function App() {
 
   const step = timelineStep < 0 ? 0 : timelineStep
   const year = TIMELINE_YEARS[Math.min(step, TIMELINE_YEARS.length - 1)]
+
+  useEffect(() => {
+    if (analytics) {
+      logEvent(analytics, 'screen_view', { screen_name: screen })
+    }
+  }, [screen])
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>

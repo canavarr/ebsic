@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getAnalytics } from 'firebase/analytics'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -8,16 +9,21 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 let db = null
+let analytics = null
 if (firebaseConfig.projectId) {
   try {
     const app = initializeApp(firebaseConfig)
     db = getFirestore(app)
+    if (typeof window !== 'undefined') {
+      analytics = getAnalytics(app)
+    }
   } catch (e) {
     console.warn('Firebase init failed:', e)
   }
 }
 
-export { db }
+export { db, analytics }

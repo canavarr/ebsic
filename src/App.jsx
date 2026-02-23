@@ -30,7 +30,7 @@ const T = {
     leaderboard: 'Edetabel', lbRank: 'Koht', lbTeam: 'Tiim', lbValue: 'Väärtus', lbGainPct: 'Kasum %', lbYou: 'sina',
     restart: 'Alusta uuesti',
     categoryRaha: 'Raha', categoryKrüpto: 'Krüpto', categoryTooraine: 'Tooraine',
-    categoryUSA: 'USA', categoryEesti: 'Eesti', categoryHolland: 'Holland', categorySaksamaa: 'Saksamaa', categoryTaani: 'Taani', categoryHiina: 'Hiina',
+    categoryUSA: 'USA', categoryEesti: 'Eesti', categoryHolland: 'Holland', categorySaksamaa: 'Saksamaa', categorySoome: 'Soome', categoryŠveits: 'Šveits', categoryTaani: 'Taani', categoryHiina: 'Hiina',
   },
   en: {
     navClub: 'Investment Club',
@@ -54,10 +54,10 @@ const T = {
     leaderboard: 'Leaderboard', lbRank: 'Rank', lbTeam: 'Team', lbValue: 'Value', lbGainPct: 'Gain %', lbYou: 'you',
     restart: 'Start over',
     categoryRaha: 'Cash', categoryKrüpto: 'Crypto', categoryTooraine: 'Commodities',
-    categoryUSA: 'USA', categoryEesti: 'Estonia', categoryHolland: 'Netherlands', categorySaksamaa: 'Germany', categoryTaani: 'Denmark', categoryHiina: 'China',
+    categoryUSA: 'USA', categoryEesti: 'Estonia', categoryHolland: 'Netherlands', categorySaksamaa: 'Germany', categorySoome: 'Finland', categoryŠveits: 'Switzerland', categoryTaani: 'Denmark', categoryHiina: 'China',
   },
 }
-const CATEGORY_LABEL_KEY = { USA: 'categoryUSA', Eesti: 'categoryEesti', Holland: 'categoryHolland', Saksamaa: 'categorySaksamaa', Taani: 'categoryTaani', Hiina: 'categoryHiina', Krüpto: 'categoryKrüpto', Tooraine: 'categoryTooraine', Raha: 'categoryRaha' }
+const CATEGORY_LABEL_KEY = { USA: 'categoryUSA', Eesti: 'categoryEesti', Holland: 'categoryHolland', Saksamaa: 'categorySaksamaa', Soome: 'categorySoome', Šveits: 'categoryŠveits', Taani: 'categoryTaani', Hiina: 'categoryHiina', Krüpto: 'categoryKrüpto', Tooraine: 'categoryTooraine', Raha: 'categoryRaha' }
 function getCategoryLabel(cat, t) {
   return (CATEGORY_LABEL_KEY[cat] && t[CATEGORY_LABEL_KEY[cat]]) || cat
 }
@@ -179,6 +179,10 @@ const ASSET_DATA = [
   { id: 'egr1t', name: 'Enefit Green AS', ticker: 'EGR1T', price2015: 2.9, price2025: 3.2, growthRate: 0.1, category: 'Eesti', description: 'Enefit Green toodab elektrienergiat taastuvatest energiaallikatest.', historicalEvent: '2021: IPO. 2022: energiakriis. 2023-2025: taastuvenergia investeeringud.' },
   { id: 'asml', name: 'ASML Holding NV', ticker: 'ASML', price2015: 90, price2025: 680, growthRate: 6.55, category: 'Holland', description: 'ASML arendab ja toodab litograafiaseadmeid pooljuhtide tootmiseks.', historicalEvent: '2015-2020: pooljuhtide nõudlus kasvab. 2020: COVID suurendab nõudlust. 2023-2025: AI ja kiipide nõudlus.' },
   { id: 'sap', name: 'SAP SE', ticker: 'SAP', price2015: 58, price2025: 170, growthRate: 1.93, category: 'Saksamaa', description: 'SAP arendab ettevõtetele mõeldud tarkvara.', historicalEvent: '2015-2020: pilveteenuste kasv. 2022: turu langus. 2023-2025: stabiliseerumine.' },
+  { id: 'wdi', name: 'Wirecard AG', ticker: 'WDI', price2015: 39.80, price2025: 0.02, growthRate: -0.9995, category: 'Saksamaa', description: 'Saksamaa kiireima kasvuga finantstehnoloogia (Fintech) ettevõte, mis muudab digitaalsed maksed globaalseks standardiks.', historicalEvent: '2015-2019: kiire kasv. 2020: pettus avastatakse, ettevõte pankrotistub.' },
+  { id: 'nokia', name: 'Nokia Oyj', ticker: 'NOKIA', price2015: 6.80, price2025: 4.50, growthRate: -0.338, category: 'Soome', description: 'Maailma juhtiv 5G võrkude arendaja. Ettevõte on edukalt väljunud mobiiliärist ja keskendub nüüd tuleviku infrastruktuurile.', historicalEvent: '2015-2020: mobiilitehnoloogia ümberorienteerumine. 2021-2025: 5G ja võrguinfrastruktuuri fookus.' },
+  { id: 'pton', name: 'Peloton Interactive Inc.', ticker: 'PTON', price2015: 25.10, price2025: 0.80, growthRate: -0.968, category: 'USA', description: 'Revolutsiooniline treeningtehnoloogia, mis toob jõusaali elamuse otse sinu elutuppa läbi tipptasemel riistvara.', historicalEvent: '2020: COVID suurendab nõudlust. 2021-2022: ülehindamine, juhtimisvahetus. 2023-2025: langus.' },
+  { id: 'cs', name: 'Credit Suisse Group', ticker: 'CS', price2015: 21, price2025: 7.75, growthRate: -0.631, category: 'Šveits', description: 'Üks maailma prestiižsemaid panku, mis pakub ülimat Šveitsi stabiilsust ja globaalset varahaldust.', historicalEvent: '2021-2022: skandaalid ja kaotused. 2023: UBS võtab üle. 2024-2025: integratsioon.' },
   { id: 'nvo', name: 'Novo Nordisk A/S', ticker: 'NVO', price2015: 18, price2025: 110, growthRate: 5.11, category: 'Taani', description: 'Novo Nordisk toodab ravimeid krooniliste haiguste raviks.', historicalEvent: '2015-2020: ravimite müük kasvab. 2022-2025: kaalulangetusravimite nõudlus tõstab aktsiat.' },
   { id: 'nio', name: 'NIO Inc.', ticker: 'NIO', price2015: 6.26, price2025: 8, growthRate: 0.27, category: 'Hiina', description: 'NIO arendab ja müüb elektrisõidukeid.', historicalEvent: '2018: IPO. 2020: elektriautode buum. 2022-2025: konkurents ja volatiilsus.' },
   { id: 'btc', name: 'Bitcoin', ticker: 'BTC', price2015: 320, price2025: 42000, growthRate: 130.25, category: 'Krüpto', description: 'Bitcoin on detsentraliseeritud digitaalne vara.', historicalEvent: '2017: suur tõus. 2018: crash. 2020-2021: uus tõus. 2022: crash. 2024-2025: taastumine.' },
@@ -207,6 +211,10 @@ const ASSET_EN = {
   egr1t: { name: 'Enefit Green AS', description: 'Enefit Green produces electricity from renewable energy sources.' },
   asml: { name: 'ASML Holding NV', description: 'ASML develops and manufactures lithography equipment for semiconductors.' },
   sap: { name: 'SAP SE', description: 'SAP develops enterprise software.' },
+  wdi: { name: 'Wirecard AG', description: "Germany's fastest-growing fintech company, making digital payments a global standard." },
+  nokia: { name: 'Nokia Oyj', description: "World-leading 5G network developer. Successfully exited mobile business, now focused on future infrastructure." },
+  pton: { name: 'Peloton Interactive Inc.', description: 'Revolutionary fitness technology bringing the gym experience home through premium hardware.' },
+  cs: { name: 'Credit Suisse Group', description: "One of the world's most prestigious banks, offering Swiss stability and global wealth management." },
   nvo: { name: 'Novo Nordisk A/S', description: 'Novo Nordisk manufactures drugs for chronic diseases.' },
   nio: { name: 'NIO Inc.', description: 'NIO develops and sells electric vehicles.' },
   btc: { name: 'Bitcoin', description: 'Bitcoin is a decentralized digital asset.' },
@@ -223,14 +231,14 @@ function getAssetDisplay(asset, lang) {
 }
 
 // Used for donut/header aggregation only (Aktsiad = all non-crypto, non-commodity)
-const CATEGORY_ORDER = ['USA', 'Eesti', 'Holland', 'Saksamaa', 'Taani', 'Hiina', 'Krüpto', 'Tooraine']
+const CATEGORY_ORDER = ['USA', 'Eesti', 'Holland', 'Saksamaa', 'Soome', 'Šveits', 'Taani', 'Hiina', 'Krüpto', 'Tooraine']
 
 // Ticker to icon filename (public/icons/*.png) - GOOGL uses GOOG.png
 const TICKER_ICON = {
-  AAPL: 'AAPL', AMD: 'AMD', AMZN: 'AMZN', ASML: 'ASML', DIS: 'DIS', EGR1T: 'EGR1T',
+  AAPL: 'AAPL', AMD: 'AMD', AMZN: 'AMZN', ASML: 'ASML', CS: 'CS', DIS: 'DIS', EGR1T: 'EGR1T',
   GOOGL: 'GOOG', LHV1T: 'LHV1T', MCD: 'MCD', META: 'META', MSFT: 'MSFT', NFLX: 'NFLX',
-  NIO: 'NIO', NKE: 'NKE', NVO: 'NVO', SAP: 'SAP', TAL1T: 'TAL1T', TKM1T: 'TKM1T',
-  TSLA: 'TSLA', UBER: 'UBER', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT', CASH: 'CASH',
+  NIO: 'NIO', NKE: 'NKE', NOKIA: 'NOKIA', NVO: 'NVO', PTON: 'PTON', SAP: 'SAP', TAL1T: 'TAL1T', TKM1T: 'TKM1T',
+  TSLA: 'TSLA', UBER: 'UBER', WDI: 'WDI', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT', CASH: 'CASH',
 }
 
 

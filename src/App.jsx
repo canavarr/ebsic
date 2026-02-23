@@ -15,7 +15,7 @@ const T = {
     headerCash: 'Raha', headerStocks: 'Aktsiad', headerCrypto: 'Krüpto', headerCommodities: 'Varad',
     headerAllocation: 'Portfelli jaotus', teamMembers: 'Tiimiliikmed',
     modalClose: 'Sulge',
-    cardInfo: 'Info', cardInPortfolio: 'Portfellis', cardUnits: 'tk',
+    cardInfo: 'Info', cardValue: 'Väärtus',
     landingTitle: 'Investeerimisklubi Portfellilahing',
     landingIntro: "Aasta on 2015 ja sinu tiimil on 10 000 € algkapitali portfelli loomiseks. Ees ootab 10 aastat pööraseid maailmasündmusi - majanduskriisid, pandeemia, tehisintellekti revolutsioon ja krüptobuum.",
     landingQuestion: "Kas sinu tiim suudab ehitada portfelli, mis elab üle kriisid ja leiab üles tuleviku võitjad?",
@@ -39,7 +39,7 @@ const T = {
     headerCash: 'Cash', headerStocks: 'Stocks', headerCrypto: 'Crypto', headerCommodities: 'Commodities',
     headerAllocation: 'Portfolio allocation', teamMembers: 'Team members',
     modalClose: 'Close',
-    cardInfo: 'Info', cardInPortfolio: 'In portfolio', cardUnits: '',
+    cardInfo: 'Info', cardValue: 'Value',
     landingTitle: 'Investment Club Portfolio Showdown',
     landingIntro: "The year is 2015 and your team has €10,000 in starting capital to build a portfolio. Ahead lie 10 years of dramatic world events - economic crises, pandemic, AI revolution and crypto boom.",
     landingQuestion: "Can your team build a portfolio that survives the crises and finds the future winners?",
@@ -479,12 +479,22 @@ function Modal({ asset, onClose }) {
   )
 }
 
-function AssetCard({ asset, shares, canBuy, onInfo, onBuy, onSell }) {
+function AssetCard({ asset, shares, totalValue, canBuy, onInfo, onBuy, onSell, onSetQuantity }) {
   const { lang } = useLang()
   const t = T[lang]
-  const { name } = getAssetDisplay(asset, lang)
   const locale = lang === 'en' ? 'en-IE' : 'et-EE'
+  const { name } = getAssetDisplay(asset, lang)
   const canSell = shares > 0
+  const [inputVal, setInputVal] = useState(String(shares))
+  useEffect(() => setInputVal(String(shares)), [shares])
+  const handleQuantityBlur = () => {
+    const parsed = parseInt(inputVal, 10)
+    if (!isNaN(parsed) && parsed !== shares) onSetQuantity(asset, parsed)
+    else setInputVal(String(shares))
+  }
+  const handleQuantityKeyDown = (e) => {
+    if (e.key === 'Enter') handleQuantityBlur()
+  }
   return (
     <div style={{ background: C.white, borderRadius: 12, padding: '15px 18px', border: '1px solid #e4e8f0' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -504,10 +514,20 @@ function AssetCard({ asset, shares, canBuy, onInfo, onBuy, onSell }) {
         <button onClick={() => onInfo(asset)} style={{ ...F, display: 'flex', alignItems: 'center', gap: 5, height: 32, padding: '0 12px', background: C.white, border: '1px solid #929FC2', borderRadius: 8, fontSize: 12, fontWeight: 600, color: C.gray, cursor: 'pointer' }}>
           {t.cardInfo} <InfoIcon />
         </button>
-        <span style={{ ...F, flex: 1, textAlign: 'center', fontSize: 12, color: C.gray }}>{shares > 0 ? `${t.cardInPortfolio}: ${shares} ${t.cardUnits}`.trim() : ''}</span>
+        <span style={{ ...F, flex: 1, textAlign: 'center', fontSize: 12, color: C.gray }}>{totalValue > 0 ? `${t.cardValue}: ${formatCurrency(totalValue, locale)}` : ''}</span>
         <button onClick={() => onSell(asset)} disabled={!canSell} style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: canSell ? C.tan : '#EBEFF2', cursor: canSell ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <RemoveIcon color={canSell ? '#fff' : C.gray2} />
         </button>
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={inputVal}
+          onChange={e => setInputVal(e.target.value.replace(/[^0-9]/g, ''))}
+          onBlur={handleQuantityBlur}
+          onKeyDown={handleQuantityKeyDown}
+          style={{ width: 56, height: 32, textAlign: 'center', fontSize: 12, fontFamily: 'Mulish,sans-serif', border: '1px solid #E4E8F0', borderRadius: 8, outline: 'none', color: C.gray, boxSizing: 'border-box' }}
+        />
         <button onClick={() => onBuy(asset)} disabled={!canBuy} style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: canBuy ? C.blue : C.bg, cursor: canBuy ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <AddIcon />
         </button>
@@ -626,7 +646,25 @@ function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
         return prev.map(p => (p.assetId === asset.id ? { ...p, investedAmount: newAmount } : p))
       })
     },
-    [setPortfolio]
+    []
+  )
+
+  const setQuantity = useCallback(
+    (asset, quantity) => {
+      const q = Math.max(0, Math.floor(Number(quantity) || 0))
+      setPortfolio(prev => {
+        const otherTotal = prev.filter(p => p.assetId !== asset.id).reduce((s, p) => s + p.investedAmount, 0)
+        const availableForThis = INITIAL_BUDGET - otherTotal
+        const maxInvest = Math.min(MAX_PER_ASSET, Math.max(0, availableForThis))
+        const maxShares = Math.floor(maxInvest / asset.price2015)
+        const targetShares = Math.min(q, maxShares)
+        const targetInvested = targetShares * asset.price2015
+        const rest = prev.filter(p => p.assetId !== asset.id)
+        if (targetShares === 0) return rest
+        return [...rest, { assetId: asset.id, investedAmount: targetInvested }]
+      })
+    },
+    []
   )
 
   // Design: one section "Aktsiad" (stocks A–Z by ticker), then "Krüptoraha", then "Toorained"
@@ -660,7 +698,7 @@ function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
                   const atAssetLimit = invested + a.price2015 > MAX_PER_ASSET
                   const canBuy = availableCash >= a.price2015 && !atAssetLimit
                   return (
-                    <AssetCard key={a.id} asset={a} shares={shares} canBuy={canBuy} onInfo={setModalAsset} onBuy={addShare} onSell={removeShare} />
+                    <AssetCard key={a.id} asset={a} shares={shares} totalValue={invested} canBuy={canBuy} onInfo={setModalAsset} onBuy={addShare} onSell={removeShare} onSetQuantity={setQuantity} />
                   )
                 })}
               </div>

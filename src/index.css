@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Global reset & base ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Mulish', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #F0F2F7;
+  color: #2D2F31;
+  margin: 0;
+}
+
+/* ─── Number input: hide arrows ──────────────────────────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ─── Smooth transitions for interactive elements ────────────────────────── */
+button {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Focus ring: only show on keyboard nav ──────────────────────────────── */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #00318D;
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible) {
+  outline: none;
 }

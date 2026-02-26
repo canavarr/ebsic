@@ -127,6 +127,96 @@ export const FUTURE_ASSET_DATA = [
         dividendYield: 0.015,
     },
     {
+        id: 'f-rhm', name: 'Rheinmetall AG', ticker: 'RHM', category: 'Kaitsetööstus',
+        description: 'Saksamaa kaitsetööstuse gigant, kelle tellimuste raamat on geopoliitiliste pingete tõttu ülekoormatud.',
+        descriptionEn: 'German defense giant with an overflowing order book due to geopolitical tensions.',
+        basePrice: 500, dividendYield: 0.02,
+    },
+    {
+        id: 'f-tveat', name: 'Tallinna Vesi', ticker: 'TVEAT', category: 'Kommunaal',
+        description: 'Eesti stabiilseim dividendimaksja, kaitseb portfelli tormistel aegadel.',
+        descriptionEn: 'Estonia’s most stable dividend payer, protects the portfolio during stormy times.',
+        basePrice: 12, dividendYield: 0.06,
+    },
+    {
+        id: 'f-ntu1l', name: 'Novaturas', ticker: 'NTU1L', category: 'Turism',
+        description: 'Baltikumi juhtiv reisikorraldaja, ülimalt tundlik majandusšokkide suhtes.',
+        descriptionEn: 'Leading Baltic tour operator, highly sensitive to economic shocks.',
+        basePrice: 2, dividendYield: 0,
+    },
+    {
+        id: 'f-spot', name: 'Spotify Tech', ticker: 'SPOT', category: 'Rootsi',
+        description: 'Maailma suurim helipilve teenus, mille kasumlikkus sõltub tellijate kasvust.',
+        descriptionEn: 'The world’s largest audio cloud platform, profitability depends on subscriber growth.',
+        basePrice: 250, dividendYield: 0,
+    },
+    {
+        id: 'f-abt', name: 'airBaltic', ticker: 'ABT', category: 'Turism',
+        description: 'Baltikumi lennufirma suurte kasvuplaanidega, kuid lennunduses varitsevad alati pankrotiohud.',
+        descriptionEn: 'Baltic airline with grand growth plans, but aviation always carries bankruptcy risks.',
+        basePrice: 5, dividendYield: 0, bankruptcyYear: 2028, // PANKROT 2028
+    },
+    {
+        id: 'f-cpa1t', name: 'Coop Pank', ticker: 'CPA1T', category: 'Pangandus',
+        description: 'Eestimaine kiiresti kasvav pank, mis võitleb suurtega turuosa nimel.',
+        descriptionEn: 'Fast-growing domestic bank fighting giants for market share.',
+        basePrice: 2.2, dividendYield: 0.04,
+    },
+    {
+        id: 'f-mrna', name: 'Moderna Inc.', ticker: 'MRNA', category: 'Biotehnoloogia',
+        description: 'mRNA tehnoloogia teerajaja, sõltub uute vaktsiinide ja ravimite õnnestumisest varajases faasis.',
+        descriptionEn: 'mRNA technology pioneer, relies heavily on the success of early-stage vaccines.',
+        basePrice: 110, dividendYield: 0,
+    },
+    {
+        id: 'f-vow3', name: 'Volkswagen', ticker: 'VOW3', category: 'Autotööstus',
+        description: 'Euroopa autohiiglane, mis pingutab meeleheitlikult Hiina odavate elektriautodega konkureerimisel.',
+        descriptionEn: 'European auto giant desperately struggling to compete with cheap Chinese EVs.',
+        basePrice: 120, dividendYield: 0.05,
+    },
+    {
+        id: 'f-or', name: 'L\'Oréal', ticker: 'OR', category: 'Prantsusmaa',
+        description: 'Maailma juhtiv luksuskosmeetika tootja, kaitstud kriisides (huulepulga efekt).',
+        descriptionEn: 'World leading luxury cosmetics maker, protected during crises (lipstick effect).',
+        basePrice: 420, dividendYield: 0.015,
+    },
+    {
+        id: 'f-sfg1t', name: 'Silvano Fashion', ticker: 'SFG1T', category: 'Tekstiil',
+        description: 'Pesutootja, kelle tugev seotus Idaturuga kätkeb endas pööraseid riske.',
+        descriptionEn: 'Lingerie manufacturer with strong Eastern market ties carrying massive risks.',
+        basePrice: 1.5, dividendYield: 0.1, bankruptcyYear: 2029, // PANKROT 2029
+    },
+    {
+        id: 'f-str', name: 'Starship', ticker: 'STR', category: 'Robootika',
+        description: 'Pakirobotite teerajaja. Uue ajastu spekulatiivne pärl ootab üleilmset läbimurret.',
+        descriptionEn: 'Delivery robot pioneer. A new-age speculative gem awaiting global breakthrough.',
+        basePrice: 10, dividendYield: 0,
+    },
+    {
+        id: 'f-pltr', name: 'Palantir Tech', ticker: 'PLTR', category: 'USA_Data',
+        description: 'Valitsuste ja sõjavägede andmeanalüüsi tööriist, mille järele on sõdade ajastul ülisuur nõudlus.',
+        descriptionEn: 'Government and military data analytics tool with massive demand in an era of wars.',
+        basePrice: 25, dividendYield: 0,
+    },
+    {
+        id: 'f-nokia', name: 'Nokia Oyj', ticker: 'NOKIA', category: 'Soome',
+        description: 'Vana telekomigigant arendab nüüd 6G võrke, liigub kindlalt, aga aeglaselt.',
+        descriptionEn: 'Old telecom giant now developing 6G networks, moves steadily but slowly.',
+        basePrice: 3.5, dividendYield: 0.04,
+    },
+    {
+        id: 'f-brkb', name: 'Berkshire Hathaway', ticker: 'BRK.B', category: 'USA_Väärtus',
+        description: 'Warren Buffetti kindlus pakub stabiilset kaitset igas tormis.',
+        descriptionEn: 'Warren Buffett’s fortress offers stable protection in any storm.',
+        basePrice: 400, dividendYield: 0,
+    },
+    {
+        id: 'f-ura', name: 'Global X Uranium ETF', ticker: 'URA', category: 'Tuumakütus',
+        description: 'Tuumaenergia renessanss teeb uraanist ühe kuumima rohepöörde tooraine.',
+        descriptionEn: 'Nuclear energy renaissance makes uranium one of the hottest green commodities.',
+        basePrice: 30, dividendYield: 0.04,
+    },
+    {
         id: 'f-dep', name: 'Pangahoius', ticker: 'DEP', category: 'Hoius',
         description: 'Riskivaba fikseeritud tootlusega pikaajaline pangahoius.',
         descriptionEn: 'Risk-free fixed-yield long-term bank deposit.',
@@ -141,9 +231,15 @@ export function getFutureAssetDisplay(asset, lang) {
 
 /** Start-of-year price (compound of all previous years from base price) */
 export function getFuturePrice(asset, year) {
+    if (asset.bankruptcyYear && year > asset.bankruptcyYear) return 0;
+
     let price = asset.basePrice
     for (const y of FUTURE_YEARS) {
         if (y >= year) break
+        if (asset.bankruptcyYear && y >= asset.bankruptcyYear) {
+            price = 0;
+            break;
+        }
         const mult = getGrowthMultiplier(asset, y, FUTURE_YEAR_TYPES[y])
         price = price * mult
     }
@@ -152,6 +248,8 @@ export function getFuturePrice(asset, year) {
 
 /** End-of-year value for a given invested EUR amount */
 export function getFutureEndValue(asset, investedAmount, year) {
+    if (asset.bankruptcyYear && year >= asset.bankruptcyYear) return 0;
+
     const mult = getGrowthMultiplier(asset, year, FUTURE_YEAR_TYPES[year])
     return investedAmount * mult
 }

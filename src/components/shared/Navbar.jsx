@@ -78,7 +78,10 @@ export function Logo({ ticker, size = 46 }) {
         NIO: 'NIO', NKE: 'NKE', NVO: 'NVO', SAP: 'SAP', TAL1T: 'TAL1T', TKM1T: 'TKM1T',
         TSLA: 'TSLA', UBER: 'UBER', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT',
         CASH: 'CASH', DEP: 'DEP', SPY: 'SPY', ENGI: 'ENGI', ETH: 'ETH', NVDA: 'NVDA',
-        BOLT: 'BOLT', WISE: 'WISE', IGN1L: 'IGN1L'
+        BOLT: 'BOLT', WISE: 'WISE', IGN1L: 'IGN1L',
+        RHM: 'RHM', TVEAT: 'TVEAT', NTU1L: 'NTU1L', SPOT: 'SPOT', ABT: 'ABT', CPA1T: 'CPA1T',
+        MRNA: 'MRNA', VOW3: 'VOW3', OR: 'OR', SFG1T: 'SFG1T', STR: 'STR', PLTR: 'PLTR',
+        NOKIA: 'NOKIA_NEW', 'BRK.B': 'BRKB', URA: 'URA'
     }
 
     const id = ticker || 'CASH'

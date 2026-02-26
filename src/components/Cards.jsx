@@ -185,11 +185,13 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
     const STEP = 100
     const maxAllowed = investedAmount + availableCash
 
-    // Alati saad lisada, kui cashi on, isegi kui vähem kui 100.
-    const canAdd = availableCash > 0
+    const isBankrupt = currentPrice === 0
+
+    // Alati saad lisada, kui cashi on, isegi kui vähem kui 100. Pankrotis varale ei saa lisada.
+    const canAdd = !isBankrupt && availableCash > 0
     const amountToAdd = availableCash >= STEP ? STEP : availableCash
 
-    const canRemove = hasPosition
+    const canRemove = !isBankrupt && hasPosition
     const btnSize = 36
 
     const commitValue = (val) => {
@@ -207,11 +209,18 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
         transition: 'background 0.15s',
     })
 
-    // Kuidas kuvame hinda. Kui on Hoius, kuvame intressi%. 
+    // Kuidas kuvame hinda. Kui on Hoius, kuvame intressi%.
     const isDeposit = asset.category === 'Hoius' || asset.ticker === 'DEP';
-    const displayInfo = isDeposit
+
+    let displayInfo = isDeposit
         ? `${((asset.dividendYield || 0.05) * 100).toFixed(1)}% / aastas (baas)`
         : `${formatCurrency(currentPrice, locale)}/tk`;
+
+    let nameColor = C.navy;
+    if (isBankrupt) {
+        displayInfo = '💥 PANKROTIS (Väärtus: 0€)';
+        nameColor = '#d32f2f'; // Red for bankrupt
+    }
 
     return (
         <div style={{
@@ -225,8 +234,8 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <Logo ticker={asset.ticker} size={36} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                    <div style={{ ...F, fontSize: 11, color: C.gray2, marginTop: 1, fontWeight: 500 }}>{asset.ticker} · {displayInfo}</div>
+                    <div style={{ ...F, fontSize: 13, fontWeight: 700, color: nameColor, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                    <div style={{ ...F, fontSize: 11, color: isBankrupt ? '#d32f2f' : C.gray2, marginTop: 1, fontWeight: 500 }}>{asset.ticker} · {displayInfo}</div>
                 </div>
                 <Badge label={getCategoryLabel(asset.category, t)} />
                 {/* Info — icon only */}
@@ -261,20 +270,21 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
                         min={0}
                         max={maxAllowed}
                         step={STEP}
+                        disabled={isBankrupt}
                         onChange={e => setRawInput(e.target.value)}
                         onBlur={e => commitValue(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && commitValue(rawInput)}
                         style={{
                             width: '100%', height: 38,
-                            border: `1.5px solid ${hasPosition ? C.blue + '55' : C.line}`,
+                            border: `1.5px solid ${hasPosition && !isBankrupt ? C.blue + '55' : isBankrupt ? '#ffcdd2' : C.line}`,
                             borderRadius: 7,
                             padding: '0 28px 0 10px',
                             fontFamily: 'Mulish,sans-serif', fontSize: 14,
                             fontWeight: 700,
-                            color: hasPosition ? C.navy : C.gray2,
+                            color: hasPosition && !isBankrupt ? C.navy : isBankrupt ? '#d32f2f' : C.gray2,
                             boxSizing: 'border-box',
                             textAlign: 'right', outline: 'none',
-                            background: hasPosition ? '#f4f7ff' : '#fafbfc',
+                            background: isBankrupt ? '#ffebee' : hasPosition ? '#f4f7ff' : '#fafbfc',
                             transition: 'border-color 0.15s',
                         }}
                     />

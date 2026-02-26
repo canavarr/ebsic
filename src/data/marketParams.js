@@ -36,6 +36,20 @@ export const MARKET_PARAMS = {
             Tooraine: 1.06,   // Tooraine — mõõdukas positiivne
             Indeks: 1.16,   // SPY indeks kasvab stabiilsemalt aga vähem kui üksikaktsiad
             Hoius: 1.02,   // Hoius annab lihtsalt baasintressi
+            Kaitsetööstus: 1.35, // Sõjatööstus ralli
+            Kommunaal: 1.05,     // Stabiilne aga aeglane
+            Turism: 1.25,        // Turism taastub heal aastal
+            Rootsi: 1.15,        // Spot tech
+            Pangandus: 1.12,     // Pangad laenavad
+            Biotehnoloogia: 1.28, // Riskantne biomeditsiin
+            Autotööstus: 1.08,   // Traditsioonilised tootjad
+            Prantsusmaa: 1.10,   // Luksuskaup
+            Tekstiil: 1.15,      // Jaemüük kasvab
+            Robootika: 1.30,     // Tech hype
+            USA_Data: 1.35,      // AI andmetöötlus
+            Soome: 1.08,         // Vana telekom
+            USA_Väärtus: 1.09,   // Berkshire tüüpi aktsiad
+            Tuumakütus: 1.25,    // Uraaniralli rohepöördes
         },
         bad: {
             USA: 0.76,   // USA aktsiad langevad kriisis
@@ -47,6 +61,20 @@ export const MARKET_PARAMS = {
             Tooraine: 1.18,   // Tooraine tõuseb kriisis (kallinenud)
             Indeks: 0.82,   // SPY langeb, aga natuke paremini hajutatud kui USA üksikaktsia
             Hoius: 1.04,   // Hoius on kriisiajal turvasadam (ja tihti intressid tõusevad)
+            Kaitsetööstus: 1.15, // Püsib tugev isegi kriisis
+            Kommunaal: 0.95,     // Defensiivne, kukub vähe
+            Turism: 0.55,        // Luksus ja lennundus hukas
+            Rootsi: 0.80,        // Kasvuaktsiad kukuvad
+            Pangandus: 0.85,     // Laenukahjumid
+            Biotehnoloogia: 0.60, // Riskikapital põgeneb
+            Autotööstus: 0.75,   // Uusi autosid ei osteta
+            Prantsusmaa: 0.92,   // Luksusel läheb paremini (lipstick effect)
+            Tekstiil: 0.65,      // Tarbimine kokku tõmmatud
+            Robootika: 0.50,     // Kallis ja spekulatiivne kapital ära
+            USA_Data: 0.80,      // Andmetöötluse tellimused peatuvad
+            Soome: 0.90,         // Defensiivne
+            USA_Väärtus: 0.95,   // Väärtusaktsiad pakuvad kaitset
+            Tuumakütus: 0.85,    // Energiahinnad langevad
         },
         neutral: {
             USA: 1.06,   // USA aktsiad — mõõdukas kasv
@@ -58,6 +86,20 @@ export const MARKET_PARAMS = {
             Tooraine: 1.08,   // Toorained kõrge tasemega
             Indeks: 1.06,   // Indeks kasvab stabiilselt
             Hoius: 1.02,   // Hoius säilitab väärtust
+            Kaitsetööstus: 1.05,
+            Kommunaal: 1.02,
+            Turism: 1.05,
+            Rootsi: 1.06,
+            Pangandus: 1.05,
+            Biotehnoloogia: 1.06,
+            Autotööstus: 1.03,
+            Prantsusmaa: 1.05,
+            Tekstiil: 1.03,
+            Robootika: 1.08,
+            USA_Data: 1.07,
+            Soome: 1.03,
+            USA_Väärtus: 1.04,
+            Tuumakütus: 1.06,
         },
     },
 
@@ -103,7 +145,15 @@ export const MARKET_PARAMS = {
 export function getGrowthMultiplier(asset, year, yearType) {
     const catWeight = MARKET_PARAMS.categoryWeights[yearType]?.[asset.category] ?? 1.0
     const assetMof = MARKET_PARAMS.assetModifiers[asset.id]?.[year] ?? 1.0
-    return catWeight * assetMof
+
+    // Add ±5% random variance to growth (0.95 to 1.05 multiplier), except for deposits
+    let variance = 1.0
+    // Keep Hoius exactly as constant rate
+    if (asset.category !== 'Hoius') {
+        variance = 1.0 + (Math.random() * 0.1 - 0.05)
+    }
+
+    return catWeight * assetMof * variance
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

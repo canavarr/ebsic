@@ -22,7 +22,7 @@ export function Landing({ onStart }) {
     const [inv, setInv] = useState('')
     const [checking, setChecking] = useState(false)
     const [nameError, setNameError] = useState('')
-    const [selectedMode, setSelectedMode] = useState(null) // 'classic' | 'future'
+    const [selectedMode, setSelectedMode] = useState('classic')
 
     const handleStart = async () => {
         if (!selectedMode) return
@@ -41,10 +41,6 @@ export function Landing({ onStart }) {
         }
     }
 
-    const modes = [
-        { key: 'classic', label: t.landingModeClassic, desc: t.landingModeClassicDesc, icon: '🕰' },
-        { key: 'future', label: t.landingModeFuture, desc: t.landingModeFutureDesc, icon: '🚀' },
-    ]
     const CIRCLES = [
         'M988.494,802.364A400.807,400.807,0,1,0,555.358,1022.45',
         'M493.929,513.075a176.352,176.352,0,1,0,209.15-44.215',
@@ -57,217 +53,68 @@ export function Landing({ onStart }) {
         'M994.532,697.915A373.583,373.583,0,1,0,657.661,1000.56',
     ]
 
-    // Gold accent data — dynamic based on selected mode
-    const activeMode = selectedMode || 'classic'
-    const stats = activeMode === 'future' ? [
-        { n: '2 000 €', l: lang === 'en' ? 'Starting budget' : 'Algne eelarve' },
-        { n: '5', l: lang === 'en' ? 'Future rounds' : 'Tuleviku vooru' },
-        { n: '15+', l: lang === 'en' ? 'Growth assets' : 'Kasvuvara' },
-        { n: '2026→2030', l: lang === 'en' ? 'Future timeline' : 'Tuleviku telg' },
-    ] : [
-        { n: '10 000 €', l: lang === 'en' ? 'Starting capital' : 'Algkapital' },
-        { n: '10', l: lang === 'en' ? 'Years simulated' : 'Simuleeritud aastat' },
-        { n: '20+', l: lang === 'en' ? 'Assets available' : 'Vara valikut' },
-        { n: '2015→2025', l: lang === 'en' ? 'Timeline' : 'Ajatelg' },
-    ]
-
-    const introText = activeMode === 'future' ? t.landingIntroFuture : t.landingIntro
-
     return (
-        <div style={{ ...F, minHeight: '100vh', background: C.navy, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ background: C.white, borderBottom: `1px solid ${C.line}`, flexShrink: 0 }}>
-                <Navbar dark={false} />
-            </div>
+        <div style={{ ...F, minHeight: '100vh', background: '#00266e', display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
-
-                {/* BG circles — left, navy */}
-                <div style={{ position: 'absolute', left: '-18%', top: '50%', transform: 'translateY(-55%)', pointerEvents: 'none', zIndex: 1, opacity: mobile ? 0.15 : 0.5 }}>
+                <div style={{ position: 'absolute', left: '-18%', top: '50%', transform: 'translateY(-55%)', pointerEvents: 'none', zIndex: 1, opacity: mobile ? 0.3 : 1 }}>
                     <svg viewBox="0 0 802.564 795.979" width={mobile ? 400 : 750} height={mobile ? 400 : 750}>
                         <g transform="translate(-226.227 -226.919)">
-                            {CIRCLES.map((d, i) => <path key={i} d={d} fill="none" stroke="#1a3a7a" strokeWidth="1.2" />)}
+                            {CIRCLES.map((d, i) => <path key={i} d={d} fill="none" stroke="#1e3f8a" strokeWidth="1.2" />)}
                         </g>
                     </svg>
                 </div>
 
-                {/* BG circles — right, gold accent */}
-                {!mobile && (
-                    <div style={{ position: 'absolute', right: '-14%', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1, opacity: 0.22 }}>
-                        <svg viewBox="0 0 802.564 795.979" width={660} height={660}>
-                            <g transform="translate(-226.227 -226.919)">
-                                {CIRCLES.slice(0, 5).map((d, i) => (
-                                    <path key={i} d={d} fill="none" stroke={C.tan2} strokeWidth={i === 0 ? 2 : 1.2} />
-                                ))}
-                            </g>
-                        </svg>
-                    </div>
-                )}
-
-                {/* Thin gold top-border accent line */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent 0%, ${C.tan2} 40%, ${C.tan} 60%, transparent 100%)`, zIndex: 3, opacity: 0.8 }} />
-
-                {/* Hero */}
-                <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: mobile ? '44px 16px 24px' : '76px 24px 36px', width: '100%', maxWidth: 980 }}>
-                    {/* EBS label with gold side lines */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 18 }}>
-                        <div style={{ height: 1, width: mobile ? 32 : 64, background: `linear-gradient(90deg, transparent, ${C.tan2})` }} />
-                        <div style={{ ...F, fontSize: mobile ? 11 : 13, fontWeight: 700, color: C.tan, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                            Estonian Business School
-                        </div>
-                        <div style={{ height: 1, width: mobile ? 32 : 64, background: `linear-gradient(270deg, transparent, ${C.tan2})` }} />
-                    </div>
-
-                    {/* Main title — first line white, second gold */}
-                    <div style={{ ...F, fontSize: mobile ? 30 : 56, fontWeight: 800, color: C.white, lineHeight: 1.1, margin: 0 }}>
-                        {lang === 'en' ? (
-                            <>
-                                <span>Investment Club </span>
-                                <span style={{ color: C.tan2 }}>Portfolio Showdown</span>
-                            </>
-                        ) : (
-                            <>
-                                <span>Investeerimisklubi </span>
-                                <span style={{ color: C.tan2 }}>Portfellilahing</span>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Gold divider */}
-                    <div style={{ margin: mobile ? '20px auto 0' : '28px auto 0', width: 48, height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${C.tan}, ${C.tan2})` }} />
-
-                    {/* Intro text */}
-                    <div style={{
-                        maxWidth: 640, margin: mobile ? '14px auto 0' : '20px auto 0',
-                        textAlign: 'center'
-                    }}>
-                        <div style={{
-                            ...F, fontSize: mobile ? 13 : 15, color: 'rgba(180,195,215,0.85)',
-                            lineHeight: 1.65, fontWeight: 400
-                        }}>
-                            {introText}
-                        </div>
+                <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: mobile ? '40px 16px 32px' : '80px 24px 52px', width: '100%', maxWidth: 960 }}>
+                    <div style={{ ...F, fontSize: mobile ? 28 : 50, fontWeight: 300, color: C.gray2, lineHeight: 1.25, margin: '0 0 2px' }}>Estonian Business School</div>
+                    <div style={{ ...F, fontSize: mobile ? 26 : 50, fontWeight: 500, color: C.tan2, lineHeight: 1.25, margin: '0 0 24px' }}>{t.landingTitle}</div>
+                    <div style={{ ...F, fontSize: mobile ? 14 : 16.5, color: C.white, lineHeight: 1.78, maxWidth: 800, margin: '0 auto', padding: '0 8px' }}>
+                        {selectedMode === 'classic' ? t.landingIntro : t.landingIntroFuture}
+                        <br />{t.landingQuestion}
                     </div>
                 </div>
 
-                {/* Gold stats strip — dynamic change */}
-                {!mobile && (
-                    <div key={activeMode + '_stats'} style={{
-                        position: 'relative', zIndex: 2, display: 'flex', gap: 0, marginBottom: 32,
-                        borderRadius: 10, overflow: 'hidden', border: `1px solid rgba(184,150,92,0.25)`,
-                        animation: 'fadeInUp 0.8s ease-out'
-                    }}>
-                        {stats.map((s, i) => (
-                            <div key={i} style={{
-                                padding: '12px 28px', textAlign: 'center', minWidth: 140,
-                                background: i % 2 === 0 ? 'rgba(184,150,92,0.08)' : 'rgba(184,150,92,0.04)',
-                                borderRight: i < stats.length - 1 ? `1px solid rgba(184,150,92,0.2)` : 'none',
-                            }}>
-                                <div style={{ ...F, fontSize: 18, fontWeight: 800, color: C.tan2, lineHeight: 1 }}>{s.n}</div>
-                                <div style={{ ...F, fontSize: 10, fontWeight: 600, color: 'rgba(180,195,215,0.65)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.l}</div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <div style={{ position: 'relative', zIndex: 2, marginTop: 16, width: '100%', maxWidth: 448, padding: '0 16px', boxSizing: 'border-box' }}>
+                    <div style={{ background: C.cream, borderRadius: 12, padding: mobile ? '24px 20px 32px' : '32px 40px 44px', width: '100%', boxShadow: '0 8px 48px rgba(0,0,0,0.22)' }}>
+                        <div style={{ ...F, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1F3C8E', marginBottom: 28 }}>{t.formStart}</div>
 
-                {/* Form card */}
-                <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 480, padding: '0 16px', boxSizing: 'border-box' }}>
-                    <div style={{
-                        background: C.white, borderRadius: 12,
-                        padding: mobile ? '24px 20px 28px' : '32px 32px 36px',
-                        width: '100%',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(184,150,92,0.18)',
-                    }}>
-                        {/* Gold top accent on card */}
-                        <div style={{ height: 3, background: `linear-gradient(90deg, ${C.tan}, ${C.tan2}, ${C.tan})`, borderRadius: '2px 2px 0 0', margin: mobile ? '-24px -20px 20px' : '-32px -32px 24px' }} />
-
-                        {/* Mode selector */}
-                        <div style={{ ...F, fontSize: 11, fontWeight: 700, color: C.blue, marginBottom: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.landingModeSelect}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
-                            {modes.map(m => {
-                                const isActive = selectedMode === m.key
-                                return (
-                                    <button key={m.key} onClick={() => setSelectedMode(m.key)} style={{
-                                        ...F, padding: '14px 12px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
-                                        background: isActive ? C.navy : C.bg,
-                                        border: isActive ? `2px solid ${C.tan2}` : `2px solid transparent`,
-                                        transition: 'all 0.15s',
-                                        outline: 'none',
-                                        boxShadow: isActive ? `0 0 0 1px ${C.tan2}22, inset 0 0 0 1px ${C.tan2}22` : 'none',
-                                    }}>
-                                        <div style={{ fontSize: 18, marginBottom: 5 }}>{m.icon}</div>
-                                        <div style={{ fontSize: 12, fontWeight: 800, color: isActive ? C.tan2 : C.blue, marginBottom: 3, letterSpacing: '0.02em' }}>{m.label}</div>
-                                        <div style={{ fontSize: 11, color: isActive ? 'rgba(255,255,255,0.55)' : C.gray2, lineHeight: 1.4 }}>{m.desc}</div>
-                                    </button>
-                                )
-                            })}
+                        {/* Mode Selector */}
+                        <div style={{ display: 'flex', background: '#fff', borderRadius: 8, border: '1px solid #E8DECA', overflow: 'hidden', marginBottom: 24 }}>
+                            {['classic', 'future'].map(mode => (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => setSelectedMode(mode)}
+                                    style={{
+                                        flex: 1, padding: '12px 10px',
+                                        background: selectedMode === mode ? '#1F3C8E' : 'transparent',
+                                        color: selectedMode === mode ? '#fff' : '#1F3C8E',
+                                        border: 'none', fontWeight: 700, fontSize: 13,
+                                        cursor: 'pointer', transition: 'all 0.2s',
+                                        fontFamily: 'Mulish,sans-serif'
+                                    }}
+                                >
+                                    {mode === 'classic' ? t.landingModeClassic : t.landingModeFuture}
+                                </button>
+                            ))}
                         </div>
 
-                        {/* Portfolio name */}
-                        <div style={{ marginBottom: 14 }}>
-                            <div style={{ ...F, fontSize: 11, fontWeight: 700, color: C.blue, marginBottom: 7, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.formPortfolioName} *</div>
-                            <input
-                                value={n}
-                                onChange={e => { setN(e.target.value); setNameError('') }}
-                                style={{
-                                    display: 'block', width: '100%', height: 44,
-                                    border: nameError ? '2px solid #D64045' : `1.5px solid ${C.line}`,
-                                    borderRadius: 7, padding: '0 14px', fontSize: 15,
-                                    fontFamily: 'Mulish,sans-serif', outline: 'none',
-                                    background: C.white, color: C.navy, boxSizing: 'border-box',
-                                    transition: 'border-color 0.15s',
-                                }}
-                                onFocus={e => { if (!nameError) e.target.style.borderColor = C.tan2 }}
-                                onBlur={e => { if (!nameError) e.target.style.borderColor = C.line }}
-                            />
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formPortfolioName} *</div>
+                            <input value={n} onChange={e => { setN(e.target.value); setNameError(''); }} style={{ display: 'block', width: '100%', height: 46, border: nameError ? '2px solid #D64045' : '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
                             {nameError && <div style={{ ...F, fontSize: 12, color: '#D64045', marginTop: 6 }}>{nameError}</div>}
                         </div>
-
-                        {/* Investors */}
-                        <div style={{ marginBottom: 24 }}>
-                            <div style={{ ...F, fontSize: 11, fontWeight: 700, color: C.blue, marginBottom: 7, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.formInvestors}</div>
-                            <input
-                                value={inv}
-                                onChange={e => setInv(e.target.value)}
-                                style={{
-                                    display: 'block', width: '100%', height: 44,
-                                    border: `1.5px solid ${C.line}`,
-                                    borderRadius: 7, padding: '0 14px', fontSize: 15,
-                                    fontFamily: 'Mulish,sans-serif', outline: 'none',
-                                    background: C.white, color: C.navy, boxSizing: 'border-box',
-                                    transition: 'border-color 0.15s',
-                                }}
-                                onFocus={e => e.target.style.borderColor = C.tan2}
-                                onBlur={e => e.target.style.borderColor = C.line}
-                            />
+                        <div style={{ marginBottom: 32 }}>
+                            <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formInvestors}</div>
+                            <input value={inv} onChange={e => setInv(e.target.value)} style={{ display: 'block', width: '100%', height: 46, border: '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
                         </div>
-
-                        {/* CTA */}
-                        <button
-                            type="button"
-                            onClick={handleStart}
-                            disabled={checking || !selectedMode}
-                            style={{
-                                ...F, width: '100%', height: 52,
-                                background: selectedMode
-                                    ? `linear-gradient(135deg, ${C.navy} 0%, #0d2a5e 100%)`
-                                    : C.bg,
-                                border: selectedMode ? `1.5px solid ${C.tan2}55` : 'none',
-                                borderRadius: 8,
-                                fontSize: 15, fontWeight: 700,
-                                color: selectedMode ? C.tan2 : C.gray2,
-                                cursor: (checking || !selectedMode) ? 'not-allowed' : 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                opacity: checking ? 0.7 : 1,
-                                transition: 'opacity 0.15s',
-                                letterSpacing: '0.02em',
-                            }}
-                        >
-                            {checking ? t.formChecking : t.formOpen}
-                            {!checking && selectedMode && <RocketIcon color={C.tan2} size={18} />}
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button type="button" onClick={handleStart} disabled={checking} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}>
+                                {checking ? t.formChecking : t.formOpen} {!checking && <RocketIcon color="#1F3C8E" size={18} />}
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <div style={{ flex: 1, minHeight: 40 }} />
+                <div style={{ flex: 1, minHeight: 60 }} />
             </div>
         </div>
     )

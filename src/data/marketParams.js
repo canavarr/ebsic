@@ -34,6 +34,8 @@ export const MARKET_PARAMS = {
             Saksamaa: 1.12,   // Roheenergia / Engie
             Krüpto: 1.55,   // Krüpto — kõrge tootlus, kõrge risk
             Tooraine: 1.06,   // Tooraine — mõõdukas positiivne
+            Indeks: 1.16,   // SPY indeks kasvab stabiilsemalt aga vähem kui üksikaktsiad
+            Hoius: 1.02,   // Hoius annab lihtsalt baasintressi
         },
         bad: {
             USA: 0.76,   // USA aktsiad langevad kriisis
@@ -43,6 +45,8 @@ export const MARKET_PARAMS = {
             Saksamaa: 0.84,   // Roheenergia mõõdukas langus
             Krüpto: 0.45,   // Krüpto kukkub kõige rohkem
             Tooraine: 1.18,   // Tooraine tõuseb kriisis (kallinenud)
+            Indeks: 0.82,   // SPY langeb, aga natuke paremini hajutatud kui USA üksikaktsia
+            Hoius: 1.04,   // Hoius on kriisiajal turvasadam (ja tihti intressid tõusevad)
         },
         neutral: {
             USA: 1.06,   // USA aktsiad — mõõdukas kasv
@@ -52,6 +56,8 @@ export const MARKET_PARAMS = {
             Saksamaa: 1.05,
             Krüpto: 1.08,   // Krüpto — kerge kasv
             Tooraine: 1.08,   // Toorained kõrge tasemega
+            Indeks: 1.06,   // Indeks kasvab stabiilselt
+            Hoius: 1.02,   // Hoius säilitab väärtust
         },
     },
 
@@ -85,6 +91,8 @@ export const MARKET_PARAMS = {
         Saksamaa: { et: 'Euroopa energia', en: 'European Energy' },
         Krüpto: { et: 'Krüptovaluuta', en: 'Cryptocurrency' },
         Tooraine: { et: 'Tooraine', en: 'Commodities' },
+        Indeks: { et: 'Indeksfond', en: 'Index Fund' },
+        Hoius: { et: 'Pangahoius', en: 'Bank Deposit' },
     },
 }
 

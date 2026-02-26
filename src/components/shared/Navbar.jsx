@@ -68,23 +68,57 @@ export function Badge({ label }) {
 }
 
 export function Logo({ ticker, size = 46 }) {
-    // Maps ticker -> icon filename. GOOGL uses GOOG.png
-    const TICKER_ICON = {
-        AAPL: 'AAPL', AMD: 'AMD', AMZN: 'AMZN', ASML: 'ASML', DIS: 'DIS', EGR1T: 'EGR1T',
-        GOOGL: 'GOOG', LHV1T: 'LHV1T', MCD: 'MCD', META: 'META', MSFT: 'MSFT', NFLX: 'NFLX',
-        NIO: 'NIO', NKE: 'NKE', NVO: 'NVO', SAP: 'SAP', TAL1T: 'TAL1T', TKM1T: 'TKM1T',
-        TSLA: 'TSLA', UBER: 'UBER', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT',
-        CASH: 'CASH',
+    const [imgFailed, setImgFailed] = useState(false)
+
+    // Maps ticker to a specific external logo URL
+    const TICKER_URLS = {
+        AAPL: 'https://logo.clearbit.com/apple.com',
+        AMD: 'https://logo.clearbit.com/amd.com',
+        AMZN: 'https://logo.clearbit.com/amazon.com',
+        ASML: 'https://logo.clearbit.com/asml.com',
+        DIS: 'https://logo.clearbit.com/disney.com',
+        EGR1T: 'https://logo.clearbit.com/enefitgreen.ee',
+        GOOGL: 'https://logo.clearbit.com/google.com',
+        LHV1T: 'https://logo.clearbit.com/lhv.ee',
+        MCD: 'https://logo.clearbit.com/mcdonalds.com',
+        META: 'https://logo.clearbit.com/meta.com',
+        MSFT: 'https://logo.clearbit.com/microsoft.com',
+        NFLX: 'https://logo.clearbit.com/netflix.com',
+        NIO: 'https://logo.clearbit.com/nio.com',
+        NKE: 'https://logo.clearbit.com/nike.com',
+        NVO: 'https://logo.clearbit.com/novonordisk.com',
+        SAP: 'https://logo.clearbit.com/sap.com',
+        TAL1T: 'https://logo.clearbit.com/tallink.com',
+        TKM1T: 'https://logo.clearbit.com/kaubamaja.ee',
+        TSLA: 'https://logo.clearbit.com/tesla.com',
+        UBER: 'https://logo.clearbit.com/uber.com',
+        ENGI: 'https://logo.clearbit.com/engie.com',
+        SPY: 'https://logo.clearbit.com/spglobal.com',
+        BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=025',
+        XRP: 'https://cryptologos.cc/logos/xrp-xrp-logo.svg?v=025',
+        ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=025',
+        XAU: 'https://cdn-icons-png.flaticon.com/512/9343/9343681.png',
+        BRENT: 'https://cdn-icons-png.flaticon.com/512/911/911438.png',
+        DEP: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png',
+        CASH: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png',
     }
+
     const id = ticker || 'CASH'
-    const iconFile = TICKER_ICON[id]
-    if (iconFile) {
+    const logoUrl = TICKER_URLS[id]
+
+    if (logoUrl && !imgFailed) {
         return (
-            <div style={{ width: size, height: size, borderRadius: size * 0.2, flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg }}>
-                <img src={`${BASE}icons/${iconFile}.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ width: size, height: size, borderRadius: size * 0.2, flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.white, border: `1px solid ${C.line}` }}>
+                <img
+                    src={logoUrl}
+                    alt={id}
+                    style={{ width: '85%', height: '85%', objectFit: 'contain' }}
+                    onError={() => setImgFailed(true)}
+                />
             </div>
         )
     }
+
     return (
         <div style={{ width: size, height: size, borderRadius: size * 0.2, flexShrink: 0, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.21, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', ...F }}>
             {id.length > 4 ? id.slice(0, 3) : id}

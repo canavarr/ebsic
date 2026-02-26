@@ -98,6 +98,19 @@ export const FUTURE_ASSET_DATA = [
         descriptionEn: 'Oil price fluctuates between geopolitical tensions and green transition pressure.',
         basePrice: 78,
     },
+    {
+        id: 'f-spy', name: 'S&P 500 Indeks', ticker: 'SPY', category: 'Indeks',
+        description: 'Pikaajaline panus 500 suurima USA ettevõtte stabiilsesse kasvu.',
+        descriptionEn: 'Long-term bet on the steady growth of 500 largest US companies.',
+        basePrice: 5200,
+        dividendYield: 0.015,
+    },
+    {
+        id: 'f-dep', name: 'Pangahoius', ticker: 'DEP', category: 'Hoius',
+        description: 'Riskivaba fikseeritud tootlusega pikaajaline pangahoius.',
+        descriptionEn: 'Risk-free fixed-yield long-term bank deposit.',
+        basePrice: 1000,
+    },
 ]
 
 export function getFutureAssetDisplay(asset, lang) {
@@ -170,8 +183,8 @@ export const FUTURE_STORIES = {
     2028: {
         titleEt: '2028: Ülemaailmne tarneahelate stressitest',
         titleEn: '2028: Global Supply Chain Stress Test',
-        toneEt: '🔴 Raske langusaasta',
-        toneEn: '🔴 Difficult downturn year',
+        toneEt: '⚪ Ebakindluse aasta',
+        toneEn: '⚪ Year of Uncertainty',
         bodyEt: 'Konfliktid kaugetes asukohtades eskaleeruvad ning olulised logistikasõlmed seiskavad globaalse kaubavahetuse. Tootmissisendite nappus toob tagasi ammu unustatud hinnatõusu hirmu. Suurriikide keskpangad reageerivad olukorrale teravalt ja riskivarad kaotavad massiliselt soosingut. Vaid traditsioonilised turvapaigad suudavad paanikat ära hoida.',
         bodyEn: 'Conflicts in distant regions escalate, and crucial logistics hubs freeze global commerce. A shortage of manufacturing inputs reignites a long-forgotten fear of inflation. Superpower central banks react sharply, and risk assets lose favor en masse. Only traditional safe havens manage to ward off total panic.',
         highlightsEt: [
@@ -192,8 +205,8 @@ export const FUTURE_STORIES = {
     2029: {
         titleEt: '2029: Ebaühtlane kohanemise ja ootuste aasta',
         titleEn: '2029: The Year of Uneven Adaptation & Expectations',
-        toneEt: '🟡 Neutraalne aasta',
-        toneEn: '🟡 Neutral year',
+        toneEt: '⚪ Ebakindluse aasta',
+        toneEn: '⚪ Year of Uncertainty',
         bodyEt: 'Tormipilved hakkavad vaikselt hajuma, kuid turg on endiselt ettevaatlik. Päästjad leiavad lahendusi laokriisidele ning suured platvormid otsivad taas jalgealust. Teatud nišid leiavad oma uue stabiilsuse, kuid globaalne kasv on killustunud. Suured otsused tehakse tagatoas, investorid on valivad.',
         bodyEn: 'The storm clouds are slowly parting, but the market remains cautious. Rescuers find solutions for inventory crises and large platforms seek their footing again. Certain niches discover a new stability, while global growth is fragmented. Big decisions are being made behind closed doors; investors are picky.',
         highlightsEt: [

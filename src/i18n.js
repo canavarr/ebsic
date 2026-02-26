@@ -1,0 +1,60 @@
+export const T = {
+  et: {
+    navClub: 'Investeerimisklubi',
+    navEst: 'EST', navEn: 'ENG',
+    headerInitial: 'Algne summa', headerTotal: 'Koguväärtus', headerGain: 'Kogukasum', headerGainPct: 'Kasum %',
+    headerCash: 'Raha', headerStocks: 'Aktsiad', headerCrypto: 'Krüpto', headerCommodities: 'Varad',
+    headerAllocation: 'Portfelli jaotus', teamMembers: 'Tiimiliikmed',
+    modalClose: 'Sulge',
+    cardInfo: 'Info', cardValue: 'Väärtus',
+    landingTitle: 'Investeerimisklubi Portfellilahing',
+    landingIntro: "Aasta on 2015 ja sinu tiimil on 10 000 € algkapitali portfelli loomiseks. Ees ootab 10 aastat pööraseid maailmasündmusi - majanduskriisid, pandeemia, tehisintellekti revolutsioon ja krüptobuum.",
+    landingQuestion: "Kas sinu tiim suudab ehitada portfelli, mis elab üle kriisid ja leiab üles tuleviku võitjad?",
+    formStart: 'Alusta mängu', formPortfolioName: 'Portfelli nimi', formInvestors: 'Investorid',
+    formOpen: 'Ava portfell', formDefaultPortfolio: 'Portfell',
+    formNameTaken: 'See portfelli nimi on juba kasutusel',
+    formChecking: 'Kontrollin...',
+    sectionStocks: 'Aktsiad', sectionCrypto: 'Krüptoraha', sectionCommodities: 'Toorained',
+    confirmTitle: 'Oled kindel?', confirmYes: 'Kinnita', confirmNo: 'Tühista', confirmPortfolio: 'Kinnita portfell',
+    resultsPositions: 'Portfelli positsioonid', resultsInvested: 'investeeritud',
+    resultsInvestedLabel: 'Investeeritud:', resultsValue2025: 'Väärtus (2025):', resultsGainLoss: 'Kasum / Kahjum:',
+    leaderboard: 'Edetabel', lbRank: 'Koht', lbTeam: 'Tiim', lbValue: 'Väärtus', lbGainPct: 'Kasum %', lbYou: 'sina',
+    restart: 'Alusta uuesti',
+    categoryRaha: 'Raha', categoryKrüpto: 'Krüpto', categoryTooraine: 'Tooraine',
+    categoryUSA: 'USA', categoryEesti: 'Eesti', categoryHolland: 'Holland', categorySaksamaa: 'Saksamaa', categorySoome: 'Soome', categoryŠveits: 'Šveits', categoryTaani: 'Taani', categoryHiina: 'Hiina',
+  },
+  en: {
+    navClub: 'Investment Club',
+    navEst: 'EST', navEn: 'ENG',
+    headerInitial: 'Initial amount', headerTotal: 'Total value', headerGain: 'Total gain', headerGainPct: 'Gain %',
+    headerCash: 'Cash', headerStocks: 'Stocks', headerCrypto: 'Crypto', headerCommodities: 'Commodities',
+    headerAllocation: 'Portfolio allocation', teamMembers: 'Team members',
+    modalClose: 'Close',
+    cardInfo: 'Info', cardValue: 'Value',
+    landingTitle: 'Investment Club Portfolio Showdown',
+    landingIntro: "The year is 2015 and your team has €10,000 in starting capital to build a portfolio. Ahead lie 10 years of dramatic world events - economic crises, pandemic, AI revolution and crypto boom.",
+    landingQuestion: "Can your team build a portfolio that survives the crises and finds the future winners?",
+    formStart: 'Start game', formPortfolioName: 'Portfolio name', formInvestors: 'Investors',
+    formOpen: 'Open portfolio', formDefaultPortfolio: 'Portfolio',
+    formNameTaken: 'This portfolio name is already taken',
+    formChecking: 'Checking...',
+    sectionStocks: 'Stocks', sectionCrypto: 'Cryptocurrencies', sectionCommodities: 'Commodities',
+    confirmTitle: 'Are you sure?', confirmYes: 'Confirm', confirmNo: 'Cancel', confirmPortfolio: 'Confirm portfolio',
+    resultsPositions: 'Portfolio positions', resultsInvested: 'invested',
+    resultsInvestedLabel: 'Invested:', resultsValue2025: 'Value (2025):', resultsGainLoss: 'Profit / Loss:',
+    leaderboard: 'Leaderboard', lbRank: 'Rank', lbTeam: 'Team', lbValue: 'Value', lbGainPct: 'Gain %', lbYou: 'you',
+    restart: 'Start over',
+    categoryRaha: 'Cash', categoryKrüpto: 'Crypto', categoryTooraine: 'Commodities',
+    categoryUSA: 'USA', categoryEesti: 'Estonia', categoryHolland: 'Netherlands', categorySaksamaa: 'Germany', categorySoome: 'Finland', categoryŠveits: 'Switzerland', categoryTaani: 'Denmark', categoryHiina: 'China',
+  },
+}
+
+export const CATEGORY_LABEL_KEY = {
+  USA: 'categoryUSA', Eesti: 'categoryEesti', Holland: 'categoryHolland', Saksamaa: 'categorySaksamaa',
+  Soome: 'categorySoome', Šveits: 'categoryŠveits', Taani: 'categoryTaani', Hiina: 'categoryHiina',
+  Krüpto: 'categoryKrüpto', Tooraine: 'categoryTooraine', Raha: 'categoryRaha',
+}
+
+export function getCategoryLabel(cat, t) {
+  return (CATEGORY_LABEL_KEY[cat] && t[CATEGORY_LABEL_KEY[cat]]) || cat
+}

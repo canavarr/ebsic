@@ -283,13 +283,14 @@ export function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
     const availableCash = INITIAL_BUDGET - portfolio.reduce((s, p) => s + p.investedAmount, 0)
 
     const addShare = useCallback(asset => {
-        if (availableCash < asset.price2015) return
+        if (availableCash <= 0) return
+        const toAdd = Math.min(availableCash, asset.price2015)
         const current = portfolio.find(p => p.assetId === asset.id)?.investedAmount ?? 0
-        if (current + asset.price2015 > MAX_PER_ASSET) return
+        if (current + toAdd > MAX_PER_ASSET) return
         setPortfolio(prev => {
             const existing = prev.find(p => p.assetId === asset.id)
-            if (existing) return prev.map(p => (p.assetId === asset.id ? { ...p, investedAmount: p.investedAmount + asset.price2015 } : p))
-            return [...prev, { assetId: asset.id, investedAmount: asset.price2015 }]
+            if (existing) return prev.map(p => (p.assetId === asset.id ? { ...p, investedAmount: p.investedAmount + toAdd } : p))
+            return [...prev, { assetId: asset.id, investedAmount: toAdd }]
         })
     }, [availableCash, portfolio, setPortfolio])
 
@@ -303,13 +304,15 @@ export function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
         })
     }, [setPortfolio])
 
-    const stocks = ASSET_DATA.filter(a => a.category !== 'Krüpto' && a.category !== 'Tooraine').sort((a, b) => a.ticker.localeCompare(b.ticker))
+    const stocks = ASSET_DATA.filter(a => a.category !== 'Krüpto' && a.category !== 'Tooraine' && a.category !== 'Indeks' && a.category !== 'Hoius').sort((a, b) => a.ticker.localeCompare(b.ticker))
     const crypto = ASSET_DATA.filter(a => a.category === 'Krüpto')
     const commodities = ASSET_DATA.filter(a => a.category === 'Tooraine')
+    const others = ASSET_DATA.filter(a => a.category === 'Indeks' || a.category === 'Hoius')
     const sections = [
         { title: t.sectionStocks, assets: stocks, bg: C.white },
-        { title: t.sectionCrypto, assets: crypto, bg: C.bg },
-        { title: t.sectionCommodities, assets: commodities, bg: C.white },
+        { title: 'Indeksid ja Hoiused', assets: others, bg: C.bg },
+        { title: t.sectionCrypto, assets: crypto, bg: C.white },
+        { title: t.sectionCommodities, assets: commodities, bg: C.bg },
     ]
 
     return (
@@ -329,8 +332,8 @@ export function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
                                     const pos = portfolio.find(p => p.assetId === a.id)
                                     const shares = pos ? Math.round(pos.investedAmount / a.price2015) : 0
                                     const invested = pos?.investedAmount ?? 0
-                                    const atAssetLimit = invested + a.price2015 > MAX_PER_ASSET
-                                    const canBuy = availableCash >= a.price2015 && !atAssetLimit
+                                    const atAssetLimit = invested >= MAX_PER_ASSET
+                                    const canBuy = availableCash > 0 && !atAssetLimit
                                     return <AssetCard key={a.id} asset={a} shares={shares} canBuy={canBuy} onInfo={setModalAsset} onBuy={addShare} onSell={removeShare} />
                                 })}
                             </div>

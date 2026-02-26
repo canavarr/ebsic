@@ -24,7 +24,11 @@ export function Modal({ asset, onClose }) {
                         <Logo ticker={asset.ticker} size={60} />
                         <div>
                             <div style={{ ...F, fontSize: 19, fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>{name}</div>
-                            <div style={{ ...F, fontSize: 14, color: C.gray2, marginTop: 5 }}>{formatCurrency(asset.price2015, locale)}</div>
+                            <div style={{ ...F, fontSize: 14, color: C.gray2, marginTop: 5 }}>
+                                {asset.category === 'Hoius'
+                                    ? `${((asset.growthRate || 0.05) * 100).toFixed(1)}% / aastas`
+                                    : formatCurrency(asset.price2015, locale)}
+                            </div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingTop: 2 }}>
@@ -68,7 +72,11 @@ export function AssetCard({ asset, shares, canBuy, onInfo, onBuy, onSell }) {
                     <Logo ticker={asset.ticker} />
                     <div>
                         <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>{name}</div>
-                        <div style={{ ...F, fontSize: 12, color: C.gray2, marginTop: 2 }}>{formatCurrency(asset.price2015, locale)}</div>
+                        <div style={{ ...F, fontSize: 12, color: C.gray2, marginTop: 2 }}>
+                            {asset.category === 'Hoius'
+                                ? `${((asset.growthRate || 0.05) * 100).toFixed(1)}% / aastas`
+                                : formatCurrency(asset.price2015, locale)}
+                        </div>
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -176,7 +184,11 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
 
     const STEP = 100
     const maxAllowed = investedAmount + availableCash
-    const canAdd = availableCash >= STEP
+
+    // Alati saad lisada, kui cashi on, isegi kui vähem kui 100.
+    const canAdd = availableCash > 0
+    const amountToAdd = availableCash >= STEP ? STEP : availableCash
+
     const canRemove = hasPosition
     const btnSize = 36
 
@@ -195,6 +207,12 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
         transition: 'background 0.15s',
     })
 
+    // Kuidas kuvame hinda. Kui on Hoius, kuvame intressi%. 
+    const isDeposit = asset.category === 'Hoius' || asset.ticker === 'DEP';
+    const displayInfo = isDeposit
+        ? `${((asset.dividendYield || 0.05) * 100).toFixed(1)}% / aastas (baas)`
+        : `${formatCurrency(currentPrice, locale)}/tk`;
+
     return (
         <div style={{
             background: C.white,
@@ -208,7 +226,7 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
                 <Logo ticker={asset.ticker} size={36} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                    <div style={{ ...F, fontSize: 11, color: C.gray2, marginTop: 1, fontWeight: 500 }}>{asset.ticker} · {formatCurrency(currentPrice, locale)}/tk</div>
+                    <div style={{ ...F, fontSize: 11, color: C.gray2, marginTop: 1, fontWeight: 500 }}>{asset.ticker} · {displayInfo}</div>
                 </div>
                 <Badge label={getCategoryLabel(asset.category, t)} />
                 {/* Info — icon only */}
@@ -267,7 +285,7 @@ export function FutureAssetCard({ asset, year, investedAmount, availableCash, on
                 </div>
 
                 <button
-                    onClick={() => canAdd && onAmountChange(asset, investedAmount + STEP)}
+                    onClick={() => canAdd && onAmountChange(asset, investedAmount + amountToAdd)}
                     disabled={!canAdd}
                     style={ctrlBtn(canAdd, C.blue)}
                 >

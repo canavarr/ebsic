@@ -11,6 +11,8 @@ import { Modal, AssetCard } from '../components/Cards'
 import { RocketIcon } from '../components/icons'
 import { useEffect, useRef } from 'react'
 
+// ─── Typewriter Hook Removed ───────────
+
 // ─── Landing ──────────────────────────────────────────────────────────────────
 export function Landing({ onStart }) {
     const { lang } = useLang()
@@ -132,14 +134,17 @@ export function Landing({ onStart }) {
                     {/* Gold divider */}
                     <div style={{ margin: mobile ? '20px auto 0' : '28px auto 0', width: 48, height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${C.tan}, ${C.tan2})` }} />
 
-                    {/* Intro text — dynamic change */}
-                    <div key={activeMode} style={{
-                        ...F, fontSize: mobile ? 13 : 15, color: 'rgba(180,195,215,0.85)',
+                    {/* Intro text */}
+                    <div style={{
                         maxWidth: 640, margin: mobile ? '14px auto 0' : '20px auto 0',
-                        lineHeight: 1.65, fontWeight: 400,
-                        animation: 'fadeInUp 0.6s ease-out'
+                        textAlign: 'center'
                     }}>
-                        {introText}
+                        <div style={{
+                            ...F, fontSize: mobile ? 13 : 15, color: 'rgba(180,195,215,0.85)',
+                            lineHeight: 1.65, fontWeight: 400
+                        }}>
+                            {introText}
+                        </div>
                     </div>
                 </div>
 
@@ -598,6 +603,7 @@ export function Results({ name, investors, portfolio, onReset }) {
 }
 
 // ─── Shared ────────────────────────────────────────────────────────────────────
+
 function SectionTitle({ children, mobile }) {
     return (
         <h2 style={{

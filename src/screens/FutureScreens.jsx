@@ -11,6 +11,7 @@ import { doc, setDoc, collection, getDocs, query, orderBy, limit } from 'firebas
 import { Navbar, Logo } from '../components/shared/Navbar'
 import { FutureModal, FutureAssetCard } from '../components/Cards'
 import { RocketIcon } from '../components/icons'
+import { getDiversificationPenalty } from '../data/marketParams'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 function SectionLabel({ children }) {
@@ -320,9 +321,18 @@ export function FutureSimulate({ year, portfolio, budget, onNext }) {
         return () => clearTimeout(timer)
     }, [])
 
+    const yearType = FUTURE_YEAR_TYPES[year]
+    const penalty = getDiversificationPenalty(portfolio, budget, yearType, FUTURE_ASSET_DATA);
+
     const results = portfolio.map(p => {
         const asset = FUTURE_ASSET_DATA.find(a => a.id === p.assetId)
-        const endValue = getFutureEndValue(asset, p.investedAmount, year)
+        let endValue = getFutureEndValue(asset, p.investedAmount, year)
+
+        // Rakenda karistus kui varaklass langeb karistatud kategooriasse
+        if (penalty.isPenalized && asset.category === penalty.maxCat) {
+            endValue = endValue * penalty.multiplier
+        }
+
         const reason = getAssetReason(asset, year, lang)
         const dividendIncome = asset?.dividendYield ? p.investedAmount * asset.dividendYield : 0
         return { asset, investedAmount: p.investedAmount, endValue, reason, dividendIncome }
@@ -341,7 +351,6 @@ export function FutureSimulate({ year, portfolio, budget, onNext }) {
     // Dividendid lisatakse järgmise voor cashile (nextPortfolio on positsiooni list,
     // dividenditulu kandub üle cashina App.jsx-is budget = totalEnd)
 
-    const yearType = FUTURE_YEAR_TYPES[year]
     const typeColor = yearType === 'good' ? '#16a34a' : yearType === 'bad' ? '#dc2626' : '#d97706'
 
     return (
@@ -361,6 +370,18 @@ export function FutureSimulate({ year, portfolio, budget, onNext }) {
                             {isPositive ? '+' : ''}{formatCurrency(gain, locale)} ({isPositive ? '+' : ''}{pct.toFixed(1)}%)
                         </div>
                         <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: mobile ? '12px 14px' : '16px 22px', maxWidth: 520, width: '100%', marginBottom: 20 }}>
+                            {penalty.isPenalized && (
+                                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                    <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#fca5a5', marginBottom: 4 }}>
+                                        ⚠️ {lang === 'en' ? 'Risk Alert: Lack of Diversification' : 'Riskianalüütiku hoiatus: Hajutamatus!'}
+                                    </div>
+                                    <div style={{ ...F, fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
+                                        {lang === 'en'
+                                            ? `Your portfolio is too concentrated in ${penalty.maxCat} (${(penalty.maxPct * 100).toFixed(0)}%). In a difficult market, this has led to a severe penalty!`
+                                            : `Sinu portfell sõltub liialt ühest sektorist (${penalty.maxCat}, ${(penalty.maxPct * 100).toFixed(0)}%). Kehvas turuolukorras tõi see kaasa valusa kukkumise!`}
+                                    </div>
+                                </div>
+                            )}
                             <div style={{ ...F, fontSize: 10, fontWeight: 800, color: typeColor, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
                                 {t.lessonsWhyTitle}
                             </div>

@@ -97,3 +97,45 @@ export function getGrowthMultiplier(asset, year, yearType) {
     const assetMof = MARKET_PARAMS.assetModifiers[asset.id]?.[year] ?? 1.0
     return catWeight * assetMof
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UUS: Hajutamatuse karistus. Kui 1 kategooria ületab 60% portfellist ja aasta
+// on 'bad' või 'neutral', rakendub suur allahindlus. Returnitakse objekt.
+// ─────────────────────────────────────────────────────────────────────────────
+export function getDiversificationPenalty(portfolio, budget, yearType, assetData) {
+    if (yearType === 'good' || budget <= 0 || portfolio.length === 0) return { multiplier: 1.0, isPenalized: false, maxCat: null, maxPct: 0 };
+
+    let totalInvested = portfolio.reduce((s, p) => s + p.investedAmount, 0);
+    if (totalInvested === 0) return { multiplier: 1.0, isPenalized: false, maxCat: null, maxPct: 0 };
+
+    // Calculate category sums
+    const catSums = {};
+    for (const pos of portfolio) {
+        const asset = assetData.find(a => a.id === pos.assetId);
+        if (asset) {
+            catSums[asset.category] = (catSums[asset.category] || 0) + pos.investedAmount;
+        }
+    }
+
+    // Find the max category ratio based on total budget
+    let maxCat = null;
+    let maxPct = 0;
+
+    for (const [cat, sum] of Object.entries(catSums)) {
+        const pct = sum / budget;
+        if (pct > maxPct) {
+            maxPct = pct;
+            maxCat = cat;
+        }
+    }
+
+    // If one category is over 60% of the budget and it's a bad/neutral year, they get penalized
+    if (maxPct > 0.6) {
+        // Penalty: e.g. 0.70 means they lose an extra 30% of their end value.
+        // In a bad year the penalty is harsher than in a neutral year.
+        const multiplier = yearType === 'bad' ? 0.65 : 0.80; // 35% loss or 20% loss
+        return { multiplier, isPenalized: true, maxCat, maxPct };
+    }
+
+    return { multiplier: 1.0, isPenalized: false, maxCat: null, maxPct: 0 };
+}

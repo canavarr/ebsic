@@ -1080,8 +1080,7 @@ export default function App() {
 
   const isGameMasterRoute = () => {
     const p = window.location.pathname
-    return p === '/results' || p === '/results/' || p.endsWith('/results') ||
-           p === '/leaderboard' || p === '/leaderboard/' || p.endsWith('/leaderboard')
+    return p === '/results' || p === '/results/' || p.endsWith('/results')
   }
   const [showGameMaster, setShowGameMaster] = useState(isGameMasterRoute)
   useEffect(() => {

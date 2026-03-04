@@ -43,7 +43,7 @@ export default function App() {
     }
   }, [screen, showLeaderboard])
 
-  // Standalone leaderboard — #leaderboard or /leaderboard for live events
+  // Internal leaderboard — /leaderboard or #leaderboard (no link on landing, organisers use URL directly)
   if (showLeaderboard) {
     return (
       <LangContext.Provider value={{ lang, setLang }}>

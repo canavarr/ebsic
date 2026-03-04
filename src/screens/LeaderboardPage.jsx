@@ -7,8 +7,8 @@ import { getLeaderboard } from '../services/leaderboard'
 import { Navbar } from '../components/shared/Navbar'
 
 /**
- * Standalone leaderboard page for live events.
- * Access via #leaderboard — no need to play the game to see results.
+ * Internal leaderboard page for organisers.
+ * Access via /leaderboard or #leaderboard — see Firebase results without playing.
  * Use on a second screen/projector during workshops.
  */
 export function LeaderboardPage({ onBack }) {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { logEvent } from 'firebase/analytics'
 import { analytics } from './firebase'
 import { LangContext } from './context/LangContext'
-import { LANG_KEY, TIMELINE_YEARS } from './constants'
+import { LANG_KEY, TIMELINE_YEARS, BASE } from './constants'
 import { Landing, Build, YearScreen, Results } from './screens/ClassicScreens'
 import { LeaderboardPage } from './screens/LeaderboardPage'
 
@@ -14,11 +14,20 @@ export default function App() {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
   }, [])
-  const [hash, setHash] = useState(() => window.location.hash)
+  const isLeaderboardRoute = () => {
+    const h = window.location.hash
+    const p = window.location.pathname
+    return h === '#leaderboard' || p === '/leaderboard' || p === '/leaderboard/' || p.endsWith('/leaderboard')
+  }
+  const [showLeaderboard, setShowLeaderboard] = useState(isLeaderboardRoute)
   useEffect(() => {
-    const onHash = () => setHash(window.location.hash)
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    const sync = () => setShowLeaderboard(isLeaderboardRoute())
+    window.addEventListener('hashchange', sync)
+    window.addEventListener('popstate', sync)
+    return () => {
+      window.removeEventListener('hashchange', sync)
+      window.removeEventListener('popstate', sync)
+    }
   }, [])
   const [screen, setScreen] = useState('landing')
   const [game, setGame] = useState({})
@@ -30,15 +39,15 @@ export default function App() {
 
   useEffect(() => {
     if (analytics) {
-      logEvent(analytics, 'screen_view', { screen_name: hash === '#leaderboard' ? 'leaderboard' : screen })
+      logEvent(analytics, 'screen_view', { screen_name: showLeaderboard ? 'leaderboard' : screen })
     }
-  }, [screen, hash])
+  }, [screen, showLeaderboard])
 
-  // Standalone leaderboard page — accessible via #leaderboard for live events
-  if (hash === '#leaderboard') {
+  // Standalone leaderboard — #leaderboard or /leaderboard for live events
+  if (showLeaderboard) {
     return (
       <LangContext.Provider value={{ lang, setLang }}>
-        <LeaderboardPage onBack={() => { window.location.hash = ''; setHash('') }} />
+        <LeaderboardPage onBack={() => { window.history.pushState(null, '', BASE || '/'); setShowLeaderboard(false) }} />
       </LangContext.Provider>
     )
   }

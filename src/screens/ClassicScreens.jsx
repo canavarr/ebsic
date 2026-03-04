@@ -76,7 +76,7 @@ export function Landing({ onStart }) {
               <button type="button" onClick={handleStart} disabled={checking} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}>
                 {checking ? t.formChecking : t.formOpen} {!checking && <RocketIcon color="#1F3C8E" size={18} />}
               </button>
-              <a href="#leaderboard" style={{ ...F, fontSize: 13, color: C.gray2, textDecoration: 'underline' }}>{t.lbViewLink}</a>
+              <a href="/leaderboard" style={{ ...F, fontSize: 13, color: C.gray2, textDecoration: 'underline' }}>{t.lbViewLink}</a>
             </div>
           </div>
         </div>

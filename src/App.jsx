@@ -1070,7 +1070,15 @@ export default function App() {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
   }, [])
-  const [screen, setScreen] = useState('landing')
+  const [screen, setScreen] = useState(() => {
+    try {
+      const h = (window.location.hash || '').toLowerCase()
+      const s = (window.location.search || '').toLowerCase()
+      const p = (window.location.pathname || '')
+      if (s.includes('view=results') || s.includes('gm=1') || h === '#results' || h === '#gm' || p.endsWith('/results')) return 'gm'
+    } catch {}
+    return 'landing'
+  })
   const [game, setGame] = useState({})
   const [portfolio, setPortfolio] = useState([])
   const [timelineStep, setTimelineStep] = useState(-1)
@@ -1089,10 +1097,14 @@ export default function App() {
     }
   }, [])
   const showGameMaster = (() => {
-    const p = window.location.pathname
-    const h = window.location.hash
-    const q = new URLSearchParams(window.location.search).get('view')
-    return q === 'results' || p === '/results' || p === '/results/' || p.endsWith('/results') || h === '#results'
+    const href = window.location.href || ''
+    const p = window.location.pathname || ''
+    const h = (window.location.hash || '').toLowerCase()
+    const search = (window.location.search || '').toLowerCase()
+    if (href.includes('view=results') || href.includes('gm=1') || search.includes('view=results') || search.includes('gm=1')) return true
+    if (h === '#results' || h === '#gm') return true
+    if (p === '/results' || p === '/results/' || p.endsWith('/results')) return true
+    return false
   })()
 
   useEffect(() => {
@@ -1101,18 +1113,13 @@ export default function App() {
     }
   }, [screen, showGameMaster])
 
-  if (showGameMaster) {
-    return (
-      <LangContext.Provider value={{ lang, setLang }}>
-        <GameMasterLeaderboard />
-      </LangContext.Provider>
-    )
-  }
-
   return (
     <LangContext.Provider value={{ lang, setLang }}>
-      {screen === 'landing' && <Landing onStart={d => { setGame(d); setPortfolio([]); setScreen('build'); }} />}
-      {screen === 'build' && (
+      {showGameMaster || screen === 'gm' ? (
+        <GameMasterLeaderboard />
+      ) : screen === 'landing' ? (
+        <Landing onStart={d => { setGame(d); setPortfolio([]); setScreen('build'); }} />
+      ) : screen === 'build' ? (
         <Build
           name={game.name}
           investors={game.investors}
@@ -1120,8 +1127,7 @@ export default function App() {
           setPortfolio={setPortfolio}
           onConfirm={() => setScreen('year')}
         />
-      )}
-      {screen === 'year' && (
+      ) : screen === 'year' ? (
         <YearScreen
           key={step}
           year={year}
@@ -1130,15 +1136,14 @@ export default function App() {
             else setTimelineStep(step + 1)
           }}
         />
-      )}
-      {screen === 'results' && (
+      ) : screen === 'results' ? (
         <Results
           name={game.name}
           investors={game.investors}
           portfolio={portfolio}
           onReset={() => { setScreen('landing'); setGame({}); setPortfolio([]); setTimelineStep(-1); }}
         />
-      )}
+      ) : null}
     </LangContext.Provider>
   )
 }

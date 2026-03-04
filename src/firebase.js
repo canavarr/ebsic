@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAnalytics } from 'firebase/analytics'
 
@@ -25,16 +25,16 @@ const firebaseConfig = {
 
 let db = null
 let analytics = null
-if (firebaseConfig.projectId) {
-  try {
-    const app = initializeApp(firebaseConfig)
-    db = getFirestore(app)
-    if (typeof window !== 'undefined') {
+try {
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+  db = getFirestore(app)
+  if (typeof window !== 'undefined') {
+    try {
       analytics = getAnalytics(app)
-    }
-  } catch (e) {
-    console.warn('Firebase init failed:', e)
+    } catch (_) { /* analytics optional */ }
   }
+} catch (e) {
+  console.warn('Firebase init failed:', e)
 }
 
 export { db, analytics }

@@ -113,10 +113,15 @@ function getLeaderboardLocal() {
 
 async function getLeaderboard() {
   if (!db) return getLeaderboardLocal()
-  const col = collection(db, LEADERBOARD_COLLECTION)
-  const q = query(col, orderBy('finalValue', 'desc'), limit(50))
-  const snap = await getDocs(q)
-  return snap.docs.map(d => d.data())
+  try {
+    const col = collection(db, LEADERBOARD_COLLECTION)
+    const q = query(col, orderBy('finalValue', 'desc'), limit(50))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => d.data())
+  } catch (e) {
+    console.error('Firestore getLeaderboard error:', e)
+    return []
+  }
 }
 
 function addToLeaderboardLocal(entry) {

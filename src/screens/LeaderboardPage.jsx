@@ -5,7 +5,6 @@ import { T } from '../i18n'
 import { C, F, formatCurrency, BASE } from '../constants'
 import { getLeaderboard } from '../services/leaderboard'
 import { Navbar } from '../components/shared/Navbar'
-import { BASE } from '../constants'
 
 /**
  * Standalone leaderboard page for live events.

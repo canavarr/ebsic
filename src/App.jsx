@@ -4,6 +4,7 @@ import { analytics } from './firebase'
 import { LangContext } from './context/LangContext'
 import { LANG_KEY, TIMELINE_YEARS } from './constants'
 import { Landing, Build, YearScreen, Results } from './screens/ClassicScreens'
+import { LeaderboardPage } from './screens/LeaderboardPage'
 
 export default function App() {
   const [lang, setLangState] = useState(() => {
@@ -12,6 +13,12 @@ export default function App() {
   const setLang = useCallback((l) => {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
+  }, [])
+  const [hash, setHash] = useState(() => window.location.hash)
+  useEffect(() => {
+    const onHash = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
   }, [])
   const [screen, setScreen] = useState('landing')
   const [game, setGame] = useState({})
@@ -23,9 +30,18 @@ export default function App() {
 
   useEffect(() => {
     if (analytics) {
-      logEvent(analytics, 'screen_view', { screen_name: screen })
+      logEvent(analytics, 'screen_view', { screen_name: hash === '#leaderboard' ? 'leaderboard' : screen })
     }
-  }, [screen])
+  }, [screen, hash])
+
+  // Standalone leaderboard page — accessible via #leaderboard for live events
+  if (hash === '#leaderboard') {
+    return (
+      <LangContext.Provider value={{ lang, setLang }}>
+        <LeaderboardPage onBack={() => { window.location.hash = ''; setHash('') }} />
+      </LangContext.Provider>
+    )
+  }
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>

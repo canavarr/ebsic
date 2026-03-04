@@ -1081,7 +1081,8 @@ export default function App() {
   const isGameMasterRoute = () => {
     const p = window.location.pathname
     const h = window.location.hash
-    return p === '/results' || p === '/results/' || p.endsWith('/results') || h === '#results'
+    const q = new URLSearchParams(window.location.search).get('view')
+    return q === 'results' || p === '/results' || p === '/results/' || p.endsWith('/results') || h === '#results'
   }
   const [showGameMaster, setShowGameMaster] = useState(isGameMasterRoute)
   useEffect(() => {

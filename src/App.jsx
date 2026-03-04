@@ -1078,22 +1078,22 @@ export default function App() {
   const step = timelineStep < 0 ? 0 : timelineStep
   const year = TIMELINE_YEARS[Math.min(step, TIMELINE_YEARS.length - 1)]
 
-  const isGameMasterRoute = () => {
+  const [, setLoc] = useState(0)
+  useEffect(() => {
+    const onNav = () => setLoc(n => n + 1)
+    window.addEventListener('popstate', onNav)
+    window.addEventListener('hashchange', onNav)
+    return () => {
+      window.removeEventListener('popstate', onNav)
+      window.removeEventListener('hashchange', onNav)
+    }
+  }, [])
+  const showGameMaster = (() => {
     const p = window.location.pathname
     const h = window.location.hash
     const q = new URLSearchParams(window.location.search).get('view')
     return q === 'results' || p === '/results' || p === '/results/' || p.endsWith('/results') || h === '#results'
-  }
-  const [showGameMaster, setShowGameMaster] = useState(isGameMasterRoute)
-  useEffect(() => {
-    const sync = () => setShowGameMaster(isGameMasterRoute())
-    window.addEventListener('popstate', sync)
-    window.addEventListener('hashchange', sync)
-    return () => {
-      window.removeEventListener('popstate', sync)
-      window.removeEventListener('hashchange', sync)
-    }
-  }, [])
+  })()
 
   useEffect(() => {
     if (analytics) {

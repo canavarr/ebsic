@@ -27,7 +27,7 @@ const T = {
     confirmTitle: 'Oled kindel?', confirmYes: 'Kinnita', confirmNo: 'Tühista', confirmPortfolio: 'Kinnita portfell',
     resultsPositions: 'Portfelli positsioonid', resultsInvested: 'investeeritud',
     resultsInvestedLabel: 'Investeeritud:', resultsValue2025: 'Väärtus (2025):', resultsGainLoss: 'Kasum / Kahjum:',
-    leaderboard: 'Edetabel', lbRank: 'Koht', lbTeam: 'Tiim', lbValue: 'Väärtus', lbGainPct: 'Kasum %', lbYou: 'sina',
+    leaderboard: 'Edetabel', lbRank: 'Koht', lbTeam: 'Tiim', lbTeamMembers: 'Tiimiliikmed', lbDateTime: 'Kuupäev', lbValue: 'Väärtus', lbGainPct: 'Kasum %', lbBreakdown: 'Portfell', lbCategory: 'Jaotus', lbYou: 'sina',
     restart: 'Alusta uuesti',
     categoryRaha: 'Raha', categoryKrüpto: 'Krüpto', categoryTooraine: 'Tooraine',
     categoryUSA: 'USA', categoryEesti: 'Eesti', categoryHolland: 'Holland', categorySaksamaa: 'Saksamaa', categorySoome: 'Soome', categoryŠveits: 'Šveits', categoryTaani: 'Taani', categoryHiina: 'Hiina',
@@ -51,7 +51,7 @@ const T = {
     confirmTitle: 'Are you sure?', confirmYes: 'Confirm', confirmNo: 'Cancel', confirmPortfolio: 'Confirm portfolio',
     resultsPositions: 'Portfolio positions', resultsInvested: 'invested',
     resultsInvestedLabel: 'Invested:', resultsValue2025: 'Value (2025):', resultsGainLoss: 'Profit / Loss:',
-    leaderboard: 'Leaderboard', lbRank: 'Rank', lbTeam: 'Team', lbValue: 'Value', lbGainPct: 'Gain %', lbYou: 'you',
+    leaderboard: 'Leaderboard', lbRank: 'Rank', lbTeam: 'Team', lbTeamMembers: 'Team members', lbDateTime: 'Date & time', lbValue: 'Value', lbGainPct: 'Gain %', lbBreakdown: 'Portfolio', lbCategory: 'Split', lbYou: 'you',
     restart: 'Start over',
     categoryRaha: 'Cash', categoryKrüpto: 'Crypto', categoryTooraine: 'Commodities',
     categoryUSA: 'USA', categoryEesti: 'Estonia', categoryHolland: 'Netherlands', categorySaksamaa: 'Germany', categorySoome: 'Finland', categoryŠveits: 'Switzerland', categoryTaani: 'Denmark', categoryHiina: 'China',
@@ -799,7 +799,37 @@ function Results({ name, investors, portfolio, onReset }) {
     if (addedRef.current) return
     addedRef.current = true
     ;(async () => {
-      await addToLeaderboard({ teamName: name, teamMembers: investors, finalValue: totFin, profitPercent: pct, timestamp: Date.now() })
+      const breakdown = [
+        ...assetValues.map(({ asset, investedAmount, finalValue }) => ({
+          ticker: asset.ticker,
+          name: getAssetDisplay(asset, lang).name,
+          investedAmount,
+          finalValue,
+          pct: Math.round((finalValue / totFin) * 1000) / 10,
+        })),
+        ...(availableCash > 0 ? [{
+          ticker: 'CASH',
+          name: t.categoryRaha,
+          investedAmount: availableCash,
+          finalValue: cashFin,
+          pct: Math.round((cashFin / totFin) * 1000) / 10,
+        }] : []),
+      ]
+      const donut = portfolioToDonutData(portfolio, true)
+      const donutTotal = donut.reduce((s, d) => s + d.value, 0) || 1
+      const categorySplit = {}
+      donut.forEach(d => {
+        categorySplit[d.name] = Math.round((d.value / donutTotal) * 1000) / 10
+      })
+      await addToLeaderboard({
+        teamName: name,
+        teamMembers: investors,
+        finalValue: totFin,
+        profitPercent: pct,
+        timestamp: Date.now(),
+        portfolioBreakdown: breakdown,
+        categorySplit,
+      })
       const list = await getLeaderboard()
       setLeaderboard(list.sort((a, b) => b.finalValue - a.finalValue).slice(0, 50))
     })()
@@ -892,6 +922,145 @@ function Results({ name, investors, portfolio, onReset }) {
   )
 }
 
+// ─── Game Master Leaderboard (internal, no links) ──────────────────────────────
+function GameMasterLeaderboard() {
+  const { lang } = useLang()
+  const t = T[lang]
+  const locale = lang === 'en' ? 'en-IE' : 'et-EE'
+  const mobile = useIsMobile()
+  const [leaderboard, setLeaderboard] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchLeaderboard = useCallback(async () => {
+    setLoading(true)
+    try {
+      const list = await getLeaderboard()
+      setLeaderboard(list.sort((a, b) => (b.finalValue || 0) - (a.finalValue || 0)).slice(0, 50))
+    } catch (err) {
+      console.warn('Leaderboard fetch failed:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchLeaderboard()
+    const interval = setInterval(fetchLeaderboard, 30000)
+    return () => clearInterval(interval)
+  }, [fetchLeaderboard])
+
+  const formatDateTime = (ts) => {
+    if (!ts) return '–'
+    try {
+      const d = new Date(ts)
+      return d.toLocaleString(locale, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    } catch {
+      return '–'
+    }
+  }
+
+  const renderBreakdown = (row) => {
+    const b = row.portfolioBreakdown
+    if (!b || !b.length) return '–'
+    return b
+      .sort((a, b) => (b.pct || 0) - (a.pct || 0))
+      .slice(0, 5)
+      .map(x => `${x.pct}% ${x.ticker || x.name}`)
+      .join(', ')
+  }
+
+  const renderCategory = (row) => {
+    const c = row.categorySplit
+    if (!c || typeof c !== 'object') return '–'
+    const entries = Object.entries(c).filter(([, v]) => v > 0)
+    if (!entries.length) return '–'
+    return entries
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `${v}% ${getCategoryLabel(k, t)}`)
+      .join(', ')
+  }
+
+  const headerCols = mobile ? '40px 1fr 90px 70px' : '50px 140px 140px 110px 100px 90px 1fr 1fr'
+
+  return (
+    <div style={{ ...F, minHeight: '100vh', background: C.white }}>
+      <Navbar dark={false} />
+      <div style={{ background: C.navy, padding: mobile ? '20px 16px' : '28px 40px', textAlign: 'center' }}>
+        <h1 style={{ ...F, fontSize: mobile ? 22 : 30, fontWeight: 800, color: C.white, margin: 0 }}>{t.leaderboard}</h1>
+        <p style={{ ...F, fontSize: 13, color: C.gray2, margin: '6px 0 0' }}>{lang === 'et' ? 'Otseülekanne (ainult mängujuhtidele)' : 'Live results (game masters only)'}</p>
+        <button
+          onClick={fetchLeaderboard}
+          disabled={loading}
+          style={{
+            ...F, marginTop: 16, padding: '10px 24px', background: loading ? C.slate : C.blue,
+            border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: C.white,
+            cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.8 : 1,
+          }}
+        >
+          {loading ? '…' : (lang === 'et' ? 'Värskenda' : 'Refresh')}
+        </button>
+      </div>
+      <div style={{ background: C.cream, padding: mobile ? '16px' : '24px 40px 40px', overflowX: 'auto' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', minWidth: mobile ? 600 : 'auto' }}>
+          {loading && leaderboard.length === 0 ? (
+            <div style={{ ...F, textAlign: 'center', padding: 60, color: C.slate }}>{t.formChecking}</div>
+          ) : leaderboard.length === 0 ? (
+            <div style={{ ...F, textAlign: 'center', padding: 60, color: C.slate2 }}>
+              {lang === 'en' ? 'No results yet. Play the game to add teams.' : 'Tulemusi pole veel. Mängige mängu, et lisada tiime.'}
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: headerCols, gap: 12, padding: '0 0 12px', borderBottom: '2px solid #E0D8CC', minWidth: mobile ? 320 : 900 }}>
+                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbRank}</span>
+                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbTeam}</span>
+                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbTeamMembers}</span>}
+                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbDateTime}</span>}
+                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbValue}</span>
+                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbGainPct}</span>
+                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbBreakdown}</span>}
+                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbCategory}</span>}
+              </div>
+              {leaderboard.map((row, i) => (
+                <div
+                  key={row.slug || row.teamName || i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: headerCols,
+                    gap: 12,
+                    padding: '14px 0',
+                    borderBottom: '1px solid #E0D8CC',
+                    alignItems: 'center',
+                    minWidth: mobile ? 320 : 900,
+                  }}
+                >
+                  <span style={{ ...F, fontSize: 13, color: C.slate, fontWeight: 600 }}>{i + 1}</span>
+                  <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}</span>
+                  {!mobile && (
+                    <span style={{ ...F, fontSize: 12, color: C.slate, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamMembers || '–'}</span>
+                  )}
+                  {!mobile && (
+                    <span style={{ ...F, fontSize: 12, color: C.slate }}>{formatDateTime(row.timestamp)}</span>
+                  )}
+                  <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.navy }}>{formatCurrency(row.finalValue, locale)}</span>
+                  <span style={{ ...F, fontSize: 13, fontWeight: 700, color: (row.profitPercent || 0) >= 0 ? C.tan2 : '#D64045' }}>
+                    {(row.profitPercent || 0) >= 0 ? '+ ' : '-'}{Math.abs(row.profitPercent || 0).toFixed(2)}%
+                  </span>
+                  {!mobile && (
+                    <span style={{ ...F, fontSize: 11, color: C.slate2, lineHeight: 1.3 }} title={row.portfolioBreakdown?.map(x => `${x.ticker}: ${x.pct}%`).join(', ')}>{renderBreakdown(row)}</span>
+                  )}
+                  {!mobile && (
+                    <span style={{ ...F, fontSize: 11, color: C.slate2, lineHeight: 1.3 }}>{renderCategory(row)}</span>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [lang, setLangState] = useState(() => {
@@ -909,11 +1078,31 @@ export default function App() {
   const step = timelineStep < 0 ? 0 : timelineStep
   const year = TIMELINE_YEARS[Math.min(step, TIMELINE_YEARS.length - 1)]
 
+  const isGameMasterRoute = () => {
+    const p = window.location.pathname
+    return p === '/results' || p === '/results/' || p.endsWith('/results') ||
+           p === '/leaderboard' || p === '/leaderboard/' || p.endsWith('/leaderboard')
+  }
+  const [showGameMaster, setShowGameMaster] = useState(isGameMasterRoute)
+  useEffect(() => {
+    const sync = () => setShowGameMaster(isGameMasterRoute())
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
+  }, [])
+
   useEffect(() => {
     if (analytics) {
-      logEvent(analytics, 'screen_view', { screen_name: screen })
+      logEvent(analytics, 'screen_view', { screen_name: showGameMaster ? 'game_master' : screen })
     }
-  }, [screen])
+  }, [screen, showGameMaster])
+
+  if (showGameMaster) {
+    return (
+      <LangContext.Provider value={{ lang, setLang }}>
+        <GameMasterLeaderboard />
+      </LangContext.Provider>
+    )
+  }
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>

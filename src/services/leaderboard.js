@@ -31,18 +31,10 @@ export async function isPortfolioNameTaken(name) {
 
 export async function getLeaderboard() {
   if (!db) return getLeaderboardLocal()
-  try {
-    const col = collection(db, LEADERBOARD_COLLECTION)
-    const q = query(col, orderBy('finalValue', 'desc'), limit(50))
-    const snap = await getDocs(q)
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
-  } catch (e) {
-    console.error('getLeaderboard failed:', e)
-    if (e?.code === 'failed-precondition' && e?.message?.includes('index')) {
-      console.warn('Create a Firestore index for leaderboard. See Firebase Console for the auto-generated link.')
-    }
-    return []
-  }
+  const col = collection(db, LEADERBOARD_COLLECTION)
+  const q = query(col, orderBy('finalValue', 'desc'), limit(50))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
 }
 
 function addToLeaderboardLocal(entry) {

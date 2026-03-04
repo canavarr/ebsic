@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { logEvent } from 'firebase/analytics'
 import { analytics } from './firebase'
 import { LangContext } from './context/LangContext'
-import { LANG_KEY, TIMELINE_YEARS, BASE } from './constants'
+import { LANG_KEY, TIMELINE_YEARS } from './constants'
 import { Landing, Build, YearScreen, Results } from './screens/ClassicScreens'
-import { LeaderboardPage } from './screens/LeaderboardPage'
 
 export default function App() {
   const [lang, setLangState] = useState(() => {
@@ -13,21 +12,6 @@ export default function App() {
   const setLang = useCallback((l) => {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
-  }, [])
-  const isLeaderboardRoute = () => {
-    const h = window.location.hash
-    const p = window.location.pathname
-    return h === '#leaderboard' || p === '/leaderboard' || p === '/leaderboard/' || p.endsWith('/leaderboard')
-  }
-  const [showLeaderboard, setShowLeaderboard] = useState(isLeaderboardRoute)
-  useEffect(() => {
-    const sync = () => setShowLeaderboard(isLeaderboardRoute())
-    window.addEventListener('hashchange', sync)
-    window.addEventListener('popstate', sync)
-    return () => {
-      window.removeEventListener('hashchange', sync)
-      window.removeEventListener('popstate', sync)
-    }
   }, [])
   const [screen, setScreen] = useState('landing')
   const [game, setGame] = useState({})
@@ -39,18 +23,9 @@ export default function App() {
 
   useEffect(() => {
     if (analytics) {
-      logEvent(analytics, 'screen_view', { screen_name: showLeaderboard ? 'leaderboard' : screen })
+      logEvent(analytics, 'screen_view', { screen_name: screen })
     }
-  }, [screen, showLeaderboard])
-
-  // Internal leaderboard — /leaderboard or #leaderboard (no link on landing, organisers use URL directly)
-  if (showLeaderboard) {
-    return (
-      <LangContext.Provider value={{ lang, setLang }}>
-        <LeaderboardPage onBack={() => { window.history.pushState(null, '', BASE || '/'); setShowLeaderboard(false) }} />
-      </LangContext.Provider>
-    )
-  }
+  }, [screen])
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>

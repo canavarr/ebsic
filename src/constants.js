@@ -22,7 +22,6 @@ export const C = {
   cream: '#F8F4EF',
   creamy: '#E8DECA',
   bg: '#F0F2F7',
-  line: '#E4E8F0',
   white: '#FFFFFF',
 }
 

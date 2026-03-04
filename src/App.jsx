@@ -922,7 +922,7 @@ function Results({ name, investors, portfolio, onReset }) {
   )
 }
 
-// ─── Game Master Leaderboard (internal, no links) ──────────────────────────────
+// ─── Results Page (same leaderboard table as in-game Results) ───────────────────
 function GameMasterLeaderboard() {
   const { lang } = useLang()
   const t = T[lang]
@@ -949,108 +949,33 @@ function GameMasterLeaderboard() {
     return () => clearInterval(interval)
   }, [fetchLeaderboard])
 
-  const formatDateTime = (ts) => {
-    if (!ts) return '–'
-    try {
-      const d = new Date(ts)
-      return d.toLocaleString(locale, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    } catch {
-      return '–'
-    }
-  }
-
-  const renderBreakdown = (row) => {
-    const b = row.portfolioBreakdown
-    if (!b || !b.length) return '–'
-    return b
-      .sort((a, b) => (b.pct || 0) - (a.pct || 0))
-      .slice(0, 5)
-      .map(x => `${x.pct}% ${x.ticker || x.name}`)
-      .join(', ')
-  }
-
-  const renderCategory = (row) => {
-    const c = row.categorySplit
-    if (!c || typeof c !== 'object') return '–'
-    const entries = Object.entries(c).filter(([, v]) => v > 0)
-    if (!entries.length) return '–'
-    return entries
-      .sort((a, b) => b[1] - a[1])
-      .map(([k, v]) => `${v}% ${getCategoryLabel(k, t)}`)
-      .join(', ')
-  }
-
-  const headerCols = mobile ? '40px 1fr 90px 70px' : '50px 140px 140px 110px 100px 90px 1fr 1fr'
+  const board = leaderboard
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
-      <Navbar dark={false} />
-      <div style={{ background: C.navy, padding: mobile ? '20px 16px' : '28px 40px', textAlign: 'center' }}>
-        <h1 style={{ ...F, fontSize: mobile ? 22 : 30, fontWeight: 800, color: C.white, margin: 0 }}>{t.leaderboard}</h1>
-        <p style={{ ...F, fontSize: 13, color: C.gray2, margin: '6px 0 0' }}>{lang === 'et' ? 'Otseülekanne (ainult mängujuhtidele)' : 'Live results (game masters only)'}</p>
-        <button
-          onClick={fetchLeaderboard}
-          disabled={loading}
-          style={{
-            ...F, marginTop: 16, padding: '10px 24px', background: loading ? C.slate : C.blue,
-            border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, color: C.white,
-            cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.8 : 1,
-          }}
-        >
-          {loading ? '…' : (lang === 'et' ? 'Värskenda' : 'Refresh')}
-        </button>
-      </div>
-      <div style={{ background: C.cream, padding: mobile ? '16px' : '24px 40px 40px', overflowX: 'auto' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', minWidth: mobile ? 600 : 'auto' }}>
-          {loading && leaderboard.length === 0 ? (
+      <Navbar />
+      <div style={{ background: C.cream, padding: mobile ? '24px 16px' : '36px 40px 40px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', overflowX: 'auto' }}>
+          <h2 style={{ ...F, fontSize: mobile ? 18 : 22, fontWeight: 800, color: '#1F3C8E', margin: '0 0 20px' }}>{t.leaderboard}</h2>
+          {loading && board.length === 0 ? (
             <div style={{ ...F, textAlign: 'center', padding: 60, color: C.slate }}>{t.formChecking}</div>
-          ) : leaderboard.length === 0 ? (
+          ) : board.length === 0 ? (
             <div style={{ ...F, textAlign: 'center', padding: 60, color: C.slate2 }}>
               {lang === 'en' ? 'No results yet. Play the game to add teams.' : 'Tulemusi pole veel. Mängige mängu, et lisada tiime.'}
             </div>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: headerCols, gap: 12, padding: '0 0 12px', borderBottom: '2px solid #E0D8CC', minWidth: mobile ? 320 : 900 }}>
-                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbRank}</span>
-                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbTeam}</span>
-                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbTeamMembers}</span>}
-                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbDateTime}</span>}
-                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbValue}</span>
-                <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbGainPct}</span>
-                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbBreakdown}</span>}
-                {!mobile && <span style={{ ...F, fontSize: 12, fontWeight: 700, color: '#1F3C8E' }}>{t.lbCategory}</span>}
+              <div style={{ display: 'grid', gridTemplateColumns: mobile ? '40px 1fr 100px 70px' : '80px 1fr 200px 140px', minWidth: mobile ? 320 : 'auto', padding: '0 0 12px', borderBottom: '1px solid #E0D8CC' }}>
+                {[t.lbRank, t.lbTeam, t.lbValue, t.lbGainPct].map(h => (
+                  <span key={h} style={{ ...F, fontSize: mobile ? 12 : 13, fontWeight: 700, color: '#1F3C8E' }}>{h}</span>
+                ))}
               </div>
-              {leaderboard.map((row, i) => (
-                <div
-                  key={row.slug || row.teamName || i}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: headerCols,
-                    gap: 12,
-                    padding: '14px 0',
-                    borderBottom: '1px solid #E0D8CC',
-                    alignItems: 'center',
-                    minWidth: mobile ? 320 : 900,
-                  }}
-                >
-                  <span style={{ ...F, fontSize: 13, color: C.slate, fontWeight: 600 }}>{i + 1}</span>
-                  <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}</span>
-                  {!mobile && (
-                    <span style={{ ...F, fontSize: 12, color: C.slate, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamMembers || '–'}</span>
-                  )}
-                  {!mobile && (
-                    <span style={{ ...F, fontSize: 12, color: C.slate }}>{formatDateTime(row.timestamp)}</span>
-                  )}
-                  <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.navy }}>{formatCurrency(row.finalValue, locale)}</span>
-                  <span style={{ ...F, fontSize: 13, fontWeight: 700, color: (row.profitPercent || 0) >= 0 ? C.tan2 : '#D64045' }}>
-                    {(row.profitPercent || 0) >= 0 ? '+ ' : '-'}{Math.abs(row.profitPercent || 0).toFixed(2)}%
-                  </span>
-                  {!mobile && (
-                    <span style={{ ...F, fontSize: 11, color: C.slate2, lineHeight: 1.3 }} title={row.portfolioBreakdown?.map(x => `${x.ticker}: ${x.pct}%`).join(', ')}>{renderBreakdown(row)}</span>
-                  )}
-                  {!mobile && (
-                    <span style={{ ...F, fontSize: 11, color: C.slate2, lineHeight: 1.3 }}>{renderCategory(row)}</span>
-                  )}
+              {board.map((row, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: mobile ? '40px 1fr 100px 70px' : '80px 1fr 200px 140px', minWidth: mobile ? 320 : 'auto', padding: '18px 0', borderBottom: '1px solid #E0D8CC' }}>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, color: C.slate }}>{i + 1}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 400, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, color: C.navy }}>{formatCurrency(row.finalValue, locale)}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 700, color: (row.profitPercent || 0) >= 0 ? C.tan2 : '#D64045' }}>{(row.profitPercent || 0) >= 0 ? '+ ' : '-'}{Math.abs(row.profitPercent || 0).toFixed(2)}%</span>
                 </div>
               ))}
             </>

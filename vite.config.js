@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync, existsSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -11,13 +11,14 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: 'copy-404',
+      name: 'spa-routes',
       closeBundle() {
         const src = resolve(__dirname, 'dist/index.html')
-        const dest = resolve(__dirname, 'dist/404.html')
-        if (existsSync(src)) {
-          copyFileSync(src, dest)
-        }
+        if (!existsSync(src)) return
+        copyFileSync(src, resolve(__dirname, 'dist/404.html'))
+        const resultsDir = resolve(__dirname, 'dist/results')
+        mkdirSync(resultsDir, { recursive: true })
+        copyFileSync(src, resolve(resultsDir, 'index.html'))
       },
     },
   ],

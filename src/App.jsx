@@ -1080,13 +1080,18 @@ export default function App() {
 
   const isGameMasterRoute = () => {
     const p = window.location.pathname
-    return p === '/results' || p === '/results/' || p.endsWith('/results')
+    const h = window.location.hash
+    return p === '/results' || p === '/results/' || p.endsWith('/results') || h === '#results'
   }
   const [showGameMaster, setShowGameMaster] = useState(isGameMasterRoute)
   useEffect(() => {
     const sync = () => setShowGameMaster(isGameMasterRoute())
     window.addEventListener('popstate', sync)
-    return () => window.removeEventListener('popstate', sync)
+    window.addEventListener('hashchange', sync)
+    return () => {
+      window.removeEventListener('popstate', sync)
+      window.removeEventListener('hashchange', sync)
+    }
   }, [])
 
   useEffect(() => {

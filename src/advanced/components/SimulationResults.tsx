@@ -16,20 +16,26 @@ import { getAssetDisplay } from '@/lib/assetDisplay';
 interface SimulationResultsProps {
   result: SimulationOutput;
   initialInvestment: number;
+  yearlyAddition?: number;
   onReset: () => void;
   benchmarkData?: BenchmarkResult;
   teamName: string;
   weeklySeed: number;
 }
 
-export default function SimulationResults({ result, initialInvestment, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
+const DEFAULT_YEARLY_ADDITION = 1000;
+
+export default function SimulationResults({ result, initialInvestment, yearlyAddition = DEFAULT_YEARLY_ADDITION, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
   const { lang } = useLang();
   const t = T[lang];
   const { years, finalPortfolioValue, finalCashBalance } = result;
   const assetMap = new Map(ASSET_CATALOG.map(a => [a.id, a]));
 
-  const totalInvested = initialInvestment + (years.length > 1 ? (years.length - 1) * 1000 : 0);
-  const totalReturn = ((finalPortfolioValue - totalInvested) / totalInvested) * 100;
+  const firstYear = years[0]?.year ?? 2026;
+  const lastYear = years[years.length - 1]?.year ?? 2035;
+  const yearlyAdditions = Math.max(0, lastYear - firstYear);
+  const totalInvested = initialInvestment + yearlyAdditions * yearlyAddition;
+  const totalReturn = totalInvested > 0 ? ((finalPortfolioValue - totalInvested) / totalInvested) * 100 : 0;
   const isPositive = totalReturn >= 0;
 
   const score = calculateScore(years, finalPortfolioValue, totalInvested);
@@ -51,15 +57,17 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
     ...(benchmarkData ? { benchmark: { label: t.advPassiveIndex, color: C.gray } } : {}),
   };
 
-  const lastYear = years[years.length - 1];
-  const holdingSummary = lastYear?.assetReturns.map(ar => {
+  const lastYearResult = years[years.length - 1];
+  const holdingSummary = lastYearResult?.assetReturns.map(ar => {
     const asset = assetMap.get(ar.assetId);
     if (!asset) return null;
     const totalReturnMult = years.reduce((mult, yr) => {
       const yearAsset = yr.assetReturns.find(a => a.assetId === ar.assetId);
-      return yearAsset ? mult * (1 + yearAsset.finalReturn) : mult;
+      if (!yearAsset) return mult;
+      const effectiveReturn = yearAsset.finalReturn + (yr.diversificationPenalty ?? 0);
+      return mult * (1 + effectiveReturn);
     }, 1);
-    return { asset, totalReturn: totalReturnMult - 1, finalReturn: ar.finalReturn };
+    return { asset, totalReturn: totalReturnMult - 1, finalReturn: ar.finalReturn + (lastYearResult.diversificationPenalty ?? 0) };
   }).filter(Boolean).sort((a, b) => b!.totalReturn - a!.totalReturn) ?? [];
 
   const scoreBarItems = [

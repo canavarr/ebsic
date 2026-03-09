@@ -43,8 +43,8 @@ export function calculateScore(
 
   // 3. Consistency score (0-30): fewer negative years = better
   const positiveYears = years.filter(y => y.totalPortfolioReturn >= 0).length;
-  // All positive = 30, each negative year loses ~4 points
-  const consistencyScore = Math.min(30, Math.max(0, Math.round((positiveYears / years.length) * 30)));
+  const yearCount = Math.max(1, years.length);
+  const consistencyScore = Math.min(30, Math.max(0, Math.round((positiveYears / yearCount) * 30)));
 
   const totalScore = returnScore + diversificationScore + consistencyScore;
   const rankEntry = RANKS.find(r => totalScore >= r.min) ?? RANKS[RANKS.length - 1];

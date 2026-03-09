@@ -342,7 +342,11 @@ export function simulateYear(input: SimulateYearInput): SimulateYearOutput {
   const inflationRate = randomInRange(rng, inflationRange.min, inflationRange.max);
   const cashAfterDividends = cashBalance + totalDividends;
   const updatedCash = cashAfterDividends * (1 - inflationRate);
-  const totalReturn = previousTotal > 0 ? (totalPortfolioValue - previousTotal) / previousTotal : 0;
+
+  // Portfolio return must include both holdings and cash (inflation affects cash)
+  const startValue = previousTotal + cashBalance;
+  const endValue = totalPortfolioValue + updatedCash;
+  const totalReturn = startValue > 0 ? (endValue - startValue) / startValue : -inflationRate;
 
   const sectorSummary = buildSectorSummary(assetReturns, assets);
 

@@ -182,7 +182,9 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
     if (game.currentYear >= END_YEAR) {
       const benchmark = simulateBenchmark(timelineRef.current!, seedRef.current);
-      const totalInvested = INITIAL_BUDGET + (game.yearHistory.length - 1) * YEARLY_ADDITION;
+      const firstY = game.yearHistory[0]?.year ?? START_YEAR;
+      const lastY = game.yearHistory[game.yearHistory.length - 1]?.year ?? END_YEAR;
+      const totalInvested = INITIAL_BUDGET + Math.max(0, lastY - firstY) * YEARLY_ADDITION;
       const finalValue = game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance;
       const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
       saveScore(seedRef.current, game.teamName, finalValue, returnPct);
@@ -215,7 +217,6 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     const newYearHistory = [...game.yearHistory];
 
     for (let year = game.currentYear; year <= END_YEAR; year++) {
-      if (currentHoldings.length === 0) break;
       if (year > game.currentYear) currentCash += YEARLY_ADDITION;
 
       const scenario = timelineRef.current?.get(year);
@@ -235,7 +236,9 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     }
 
     const benchmark = simulateBenchmark(timelineRef.current!, seedRef.current);
-    const totalInvested = INITIAL_BUDGET + (newYearHistory.length - 1) * YEARLY_ADDITION;
+    const firstY = newYearHistory[0]?.year ?? START_YEAR;
+    const lastY = newYearHistory[newYearHistory.length - 1]?.year ?? END_YEAR;
+    const totalInvested = INITIAL_BUDGET + Math.max(0, lastY - firstY) * YEARLY_ADDITION;
     const finalValue = currentHoldings.reduce((s, h) => s + h.valueAtStart, 0) + currentCash;
     const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
     saveScore(seedRef.current, game.teamName, finalValue, returnPct);
@@ -353,6 +356,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
                 finalCashBalance: game.cashBalance,
               }}
               initialInvestment={game.initialInvestment}
+              yearlyAddition={YEARLY_ADDITION}
               onReset={handleReset}
               benchmarkData={game.benchmarkData ?? undefined}
               teamName={game.teamName}

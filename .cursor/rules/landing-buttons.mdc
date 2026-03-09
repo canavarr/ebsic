@@ -1,0 +1,16 @@
+---
+description: Do NOT modify the Landing page mode toggle buttons - design is correct
+globs: src/pages/classic/Landing.jsx
+alwaysApply: true
+---
+
+# Landing Page Buttons - DO NOT MODIFY
+
+**CRITICAL**: The mode toggle buttons on the main/landing screen (`src/pages/classic/Landing.jsx`) are correct as-is.
+
+- **Do NOT change** the Algajale | Edasijõudnule segmented control buttons
+- **Do NOT replace** them with card-style buttons, larger buttons, or any other design
+- **Do NOT modify** the styling, layout, or structure of the mode toggle section
+- The current design (cream background container, white selected state, dark blue text) is the intended and correct design
+
+When making other changes to the project, **leave the Landing.jsx buttons completely untouched**. Every change to them has reverted the correct design. Do not "improve" or "redesign" them.

@@ -129,6 +129,11 @@ export const T = {
     advProfitPct: 'Kasum %',
     advStartOver: 'Alusta uuesti',
     advYearsAgo: 'aastat',
+    advPasswordTitle: 'Sisesta parool',
+    advPasswordPlaceholder: 'Parool',
+    advPasswordWrong: 'Vale parool',
+    advPasswordBack: 'Tagasi',
+    advPasswordEnter: 'Sisene',
   },
   en: {
     navClub: 'Investment Club',
@@ -256,5 +261,10 @@ export const T = {
     advProfitPct: 'Profit %',
     advStartOver: 'Start over',
     advYearsAgo: 'years',
+    advPasswordTitle: 'Enter password',
+    advPasswordPlaceholder: 'Password',
+    advPasswordWrong: 'Wrong password',
+    advPasswordBack: 'Back',
+    advPasswordEnter: 'Enter',
   },
 }

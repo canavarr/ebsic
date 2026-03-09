@@ -69,12 +69,8 @@ export default function Landing({ onStart, onStartAdvanced }) {
           <div style={{ background: C.cream, borderRadius: 12, padding: mobile ? '24px 20px 32px' : '32px 40px 44px', width: '100%', boxShadow: '0 8px 48px rgba(0,0,0,0.22)' }}>
             <div style={{ ...F, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1F3C8E', marginBottom: 28 }}>{t.formStart}</div>
             <div style={{ display: 'flex', gap: 0, marginBottom: 24, backgroundColor: '#E8DECA', borderRadius: 10, padding: 4 }}>
-              <button type="button" onClick={() => setMode('algajale')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderTopRightRadius: 0, borderBottomRightRadius: 0, fontSize: 14, fontWeight: 600, cursor: 'pointer', backgroundColor: mode === 'algajale' ? '#ffffff' : '#E8DECA', color: '#1F3C8E', transition: 'all 0.2s' }}>
-                {t.modeAlgajale}
-              </button>
-              <button type="button" onClick={() => setMode('edasijoudnule')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, borderTopRightRadius: 8, borderBottomRightRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', backgroundColor: mode === 'edasijoudnule' ? '#ffffff' : '#E8DECA', color: '#1F3C8E', transition: 'all 0.2s' }}>
-                {t.modeEdasijõudnule}
-              </button>
+              <button type="button" onClick={() => setMode('algajale')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderTopRightRadius: 0, borderBottomRightRadius: 0, fontSize: 14, fontWeight: 600, cursor: 'pointer', backgroundColor: mode === 'algajale' ? '#ffffff' : '#E8DECA', color: '#1F3C8E', transition: 'all 0.2s' }}>{t.modeAlgajale}</button>
+              <button type="button" onClick={() => setMode('edasijoudnule')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderTopLeftRadius: 0, borderBottomLeftRadius: 0, borderTopRightRadius: 8, borderBottomRightRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', backgroundColor: mode === 'edasijoudnule' ? '#ffffff' : '#E8DECA', color: '#1F3C8E', transition: 'all 0.2s' }}>{t.modeEdasijõudnule}</button>
             </div>
             <div style={{ marginBottom: 16 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formPortfolioName} *</div>

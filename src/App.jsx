@@ -5,6 +5,7 @@ import { LangContext } from './contexts/LangContext'
 import AdvancedIndex from './advanced/pages/Index'
 import { LandingPage, ClassicGame, GameMasterLeaderboard } from './pages/classic'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import AdvancedPasswordGate from './components/AdvancedPasswordGate'
 
 const LANG_KEY = 'ebsic_lang'
 
@@ -53,7 +54,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/classic" element={<ClassicGame />} />
-        <Route path="/advanced" element={<ErrorBoundary><AdvancedGame /></ErrorBoundary>} />
+        <Route path="/advanced" element={<AdvancedPasswordGate><ErrorBoundary><AdvancedGame /></ErrorBoundary></AdvancedPasswordGate>} />
       </Routes>
     </LangContext.Provider>
   )

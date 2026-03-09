@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { C, F, formatCurrencyShort } from '@/lib/theme';
+import { useLang } from '../../contexts/LangContext';
+import { T } from '../../contexts/translations';
 
 interface ResearchPanelProps {
   cost: number;
@@ -10,6 +12,8 @@ interface ResearchPanelProps {
 }
 
 export default function ResearchPanel({ cost, canAfford, hint, onPurchase, isLastYear }: ResearchPanelProps) {
+  const { lang } = useLang();
+  const t = T[lang];
   if (isLastYear) return null;
 
   return (
@@ -24,7 +28,7 @@ export default function ResearchPanel({ cost, canAfford, hint, onPurchase, isLas
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
         <div style={{ flex: 1 }}>
           <h3 style={{ ...F, fontSize: 14, fontWeight: 700, color: C.navy, margin: '0 0 4px' }}>
-            Turu-uuring
+            {t.advResearchTitle}
           </h3>
           {hint ? (
             <motion.div
@@ -41,7 +45,7 @@ export default function ResearchPanel({ cost, canAfford, hint, onPurchase, isLas
             </motion.div>
           ) : (
             <p style={{ ...F, fontSize: 12, color: C.gray, margin: 0, lineHeight: 1.5 }}>
-              Osta analüütikute raport järgmise aasta tugevaimast sektorist.
+              {t.advResearchDesc}
             </p>
           )}
         </div>
@@ -51,13 +55,13 @@ export default function ResearchPanel({ cost, canAfford, hint, onPurchase, isLas
             disabled={!canAfford}
             style={{
               ...F, padding: '10px 22px', borderRadius: 10, border: 'none',
-              background: canAfford ? C.blue : '#e4e8f0',
-              color: canAfford ? C.white : C.gray,
+              background: canAfford ? C.creamy : '#e4e8f0',
+              color: canAfford ? C.buttonBlue : C.gray,
               fontSize: 13, fontWeight: 700, cursor: canAfford ? 'pointer' : 'not-allowed',
               whiteSpace: 'nowrap' as const, flexShrink: 0,
             }}
           >
-            Osta uuring ({formatCurrencyShort(cost)})
+            {t.advResearchBuy} ({formatCurrencyShort(cost)})
           </button>
         )}
       </div>

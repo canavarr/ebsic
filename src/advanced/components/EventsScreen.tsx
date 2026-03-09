@@ -2,6 +2,9 @@ import type { YearResult, MacroState } from '@/simulation/types';
 import { ASSET_CATALOG } from '@/simulation/assets';
 import { motion } from 'framer-motion';
 import { C, F, formatCurrency } from '@/lib/theme';
+import { useLang } from '../../contexts/LangContext';
+import { T } from '../../contexts/translations';
+import { getAssetDisplay } from '@/lib/assetDisplay';
 
 const MACRO_LABELS: Record<MacroState, { label: string; bgColor: string }> = {
   GOOD_GROWTH: { label: 'Majanduskasv', bgColor: C.creamy },
@@ -19,6 +22,8 @@ interface EventsScreenProps {
 }
 
 export default function EventsScreen({ yearResult, previousValue, onContinue, isLastYear }: EventsScreenProps) {
+  const { lang } = useLang();
+  const t = T[lang];
   const macro = MACRO_LABELS[yearResult.macroState];
   const returnPct = (yearResult.totalPortfolioReturn * 100).toFixed(1);
   const isPositive = yearResult.totalPortfolioReturn >= 0;
@@ -37,7 +42,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           transition={{ duration: 0.5 }}
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
-          <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>Aasta ülevaade</div>
+          <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>{t.advYearReview}</div>
           <h1 style={{ ...F, fontSize: 56, fontWeight: 800, color: C.navy, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
             {yearResult.year}
           </h1>
@@ -71,7 +76,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ ...F, fontSize: 14, fontWeight: 700, color: C.navy }}>
-                    Sundmüük — {liq.ticker}
+                    {t.advForcedSale} — {liq.ticker}
                   </span>
                 </div>
                 <p style={{ ...F, fontSize: 13, color: C.slate, margin: '0 0 6px', lineHeight: 1.5 }}>
@@ -98,7 +103,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           >
             <span style={{ fontSize: 14 }}>◆</span>
             <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.tan }}>
-              Sinu otsus: {yearResult.appliedDecision.label}
+              {t.advYourDecision}: {yearResult.appliedDecision.label}
             </span>
           </motion.div>
         )}
@@ -115,7 +120,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' }}>
             <div>
-              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Eelmine väärtus</div>
+              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advPrevValue}</div>
               <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(previousValue)}</div>
             </div>
             <div>
@@ -204,7 +209,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           style={{ marginBottom: 32 }}
         >
           <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>
-            Varade tootlus
+            {t.advAssetReturns}
           </h2>
           <div style={{ background: C.white, borderRadius: 12, border: `1px solid ${C.creamy}`, overflow: 'hidden' }}>
             {(() => {
@@ -212,10 +217,11 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               const rows: Row[] = sortedAssetReturns.map(ar => {
                 const asset = assetMap.get(ar.assetId);
                 if (!asset) return null;
+                const { name } = getAssetDisplay(asset, lang);
                 return {
                   key: ar.assetId,
                   ticker: asset.ticker,
-                  name: asset.name,
+                  name,
                   returnPctNum: ar.finalReturn,
                   pct: (ar.finalReturn * 100).toFixed(1),
                   pos: ar.finalReturn >= 0,
@@ -227,7 +233,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
                 rows.push({
                   key: 'cash',
                   ticker: 'CASH',
-                  name: 'Sularaha (inflatsioon)',
+                  name: t.advCashInflation,
                   returnPctNum: cashReturn,
                   pct: (cashReturn * 100).toFixed(1),
                   pos: cashReturn >= 0,
@@ -270,7 +276,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               display: 'inline-flex', alignItems: 'center', gap: 10,
             }}
           >
-            {isLastYear ? 'Vaata tulemusi →' : `Edasi ${yearResult.year + 1}. aastasse →`}
+            {isLastYear ? `${t.advSeeResults} →` : t.advNextYearToYear.replace('{year}', String(yearResult.year + 1)) + ' →'}
           </button>
         </motion.div>
       </div>

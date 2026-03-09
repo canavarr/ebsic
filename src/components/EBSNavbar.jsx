@@ -23,7 +23,7 @@ function useIsMobile() {
   return isMobile
 }
 
-export default function EBSNavbar({ dark = false, showBack = false }) {
+export default function EBSNavbar({ dark = false }) {
   const { lang, setLang } = useLang()
   const t = NAV_T[lang]
   const isMobile = useIsMobile()
@@ -37,10 +37,9 @@ export default function EBSNavbar({ dark = false, showBack = false }) {
       borderBottom: dark ? 'none' : '1px solid #E8EAF0',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 14 }}>
-        {showBack ? (
-          <Link to="/" style={{ ...F, fontSize: 14, fontWeight: 500, color: textColor, textDecoration: 'none', marginRight: 8 }}>{t.navBack}</Link>
-        ) : null}
-        <img src={`${BASE}icons/ebs.svg`} alt="EBS" style={{ width: 38, height: 35 }} />
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src={`${BASE}icons/ebs.svg`} alt="EBS" style={{ width: 38, height: 35 }} />
+        </Link>
         <span style={{ ...F, fontSize: isMobile ? 13 : 15, fontWeight: 500, color: textColor }}>{t.navClub}</span>
       </div>
       <button onClick={() => setLang(lang === 'et' ? 'en' : 'et')} style={{ ...F, display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', fontSize: 14, fontWeight: 700, color: textColor, cursor: 'pointer' }}>

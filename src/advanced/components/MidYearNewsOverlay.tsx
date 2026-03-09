@@ -1,6 +1,8 @@
 import type { NewsHeadline } from '@/simulation/types';
 import { motion } from 'framer-motion';
 import { C, F } from '@/lib/theme';
+import { useLang } from '../../contexts/LangContext';
+import { T } from '../../contexts/translations';
 
 interface MidYearNewsOverlayProps {
   year: number;
@@ -13,6 +15,8 @@ interface MidYearNewsOverlayProps {
 export default function MidYearNewsOverlay({
   year, context, headlines, onRebalance, onContinue,
 }: MidYearNewsOverlayProps) {
+  const { lang } = useLang();
+  const t = T[lang];
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -42,10 +46,10 @@ export default function MidYearNewsOverlay({
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span style={{ ...F, fontSize: 12, fontWeight: 700, color: C.tan, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Kiirteade — Aasta {year} keskpaik
+            {t.advMidYearFlash} — {year} {lang === 'et' ? 'keskpaik' : 'mid-year'}
           </span>
           <span style={{ ...F, fontSize: 11, fontWeight: 600, color: C.gray }}>
-            Turuülevaade
+            {t.advMidYearOverview}
           </span>
         </div>
 
@@ -105,17 +109,17 @@ export default function MidYearNewsOverlay({
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              Kohanda portfelli
+              {t.advRebalance}
             </button>
             <button
               onClick={onContinue}
               style={{
                 ...F, flex: 1, padding: '13px 20px', borderRadius: 10,
-                background: C.white, border: `1.5px solid #e4e8f0`,
+                background: C.white, border: `1.5px solid ${C.creamy}`,
                 fontSize: 14, fontWeight: 600, color: C.gray, cursor: 'pointer',
               }}
             >
-              Jätka muudatusteta
+              {t.advContinueNoChange}
             </button>
           </div>
         </div>

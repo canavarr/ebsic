@@ -5,8 +5,11 @@ import type { AssetDefinition, PortfolioHolding, Sector } from '@/simulation/typ
 import RiskMeter from '@/components/RiskMeter';
 import ResearchPanel from '@/components/ResearchPanel';
 import { C, F, formatCurrency } from '@/lib/theme';
-
-const MAX_PER_ASSET = 2000;
+import { useLang } from '../../contexts/LangContext';
+import { T } from '../../contexts/translations';
+import { getAssetDisplay } from '@/lib/assetDisplay';
+import { getSharedAssetVisual } from '../../data/sharedAssetMetadata';
+import { Logo } from '../../components/classic/ClassicShared';
 
 type AssetCategory = 'ETFs' | 'Aktsiad' | 'Krüptoraha' | 'Toorained';
 
@@ -57,20 +60,6 @@ function Badge({ label }: { label: string }) {
   );
 }
 
-/* ─── Logo ─── */
-function Logo({ ticker, size = 46 }: { ticker: string; size?: number }) {
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: size * 0.22, flexShrink: 0,
-      background: C.slate, display: 'flex', alignItems: 'center',
-      justifyContent: 'center', fontSize: size * 0.21, fontWeight: 800, color: '#fff',
-      letterSpacing: '-0.02em', ...F,
-    }}>
-      {ticker.length > 4 ? ticker.slice(0, 3) : ticker}
-    </div>
-  );
-}
-
 /* ─── Donut ─── */
 function Donut({ segments }: { segments: { name: string; value: number; color: string }[] }) {
   const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
@@ -111,13 +100,13 @@ function Donut({ segments }: { segments: { name: string; value: number; color: s
 }
 
 /* ─── Trade Counter ─── */
-function TradeCounter({ used, max }: { used: number; max: number }) {
+function TradeCounter({ used, max, label }: { used: number; max: number; label: string }) {
   const remaining = max - used;
   const ratio = used / max;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.slate2 }}>
-        Tehingud
+        {label}
       </div>
       <div style={{
         width: 120, height: 6, borderRadius: 3,
@@ -138,7 +127,9 @@ function TradeCounter({ used, max }: { used: number; max: number }) {
 }
 
 /* ─── Header ─── */
-function PortfolioHeader({ cash, etfVal, stocksVal, cryptoVal, rawVal, currentYear, totalBudget, portfolio, tradesUsed, maxTrades, transactionFee }: {
+function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoVal, rawVal, currentYear, totalBudget, portfolio, tradesUsed, maxTrades, transactionFee }: {
+  teamName: string;
+  investors: string;
   cash: number;
   etfVal: number;
   stocksVal: number;
@@ -151,6 +142,8 @@ function PortfolioHeader({ cash, etfVal, stocksVal, cryptoVal, rawVal, currentYe
   maxTrades: number;
   transactionFee: number;
 }) {
+  const { lang } = useLang();
+  const t = T[lang];
   const totalVal = etfVal + stocksVal + cryptoVal + rawVal;
   const donutSegments = [
     { name: 'Raha', value: Math.max(0, cash), color: C.blue },
@@ -175,12 +168,12 @@ function PortfolioHeader({ cash, etfVal, stocksVal, cryptoVal, rawVal, currentYe
     <div style={{ background: C.bg, padding: '28px 48px 24px', borderBottom: '1px solid #dde1ec' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', maxWidth: 1100, margin: '0 auto', gap: 24 }}>
         <div style={{ flex: 1 }}>
-          <h1 style={{ ...F, margin: '0 0 4px', fontSize: 36, fontWeight: 800, color: C.blue, letterSpacing: '-0.02em' }}>Portfell — {currentYear}</h1>
-          <p style={{ ...F, margin: '0 0 12px', color: C.gray2, fontSize: 14 }}>Vali oma varad ja ehita portfell</p>
+          <h1 style={{ ...F, margin: '0 0 4px', fontSize: 36, fontWeight: 800, color: C.blue, letterSpacing: '-0.02em' }}>{teamName}</h1>
+          <p style={{ ...F, margin: '0 0 12px', color: C.gray2, fontSize: 14 }}>{investors || t.teamMembers}</p>
 
           {/* Trade counter + fee info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 16 }}>
-            <TradeCounter used={tradesUsed} max={maxTrades} />
+            <TradeCounter used={tradesUsed} max={maxTrades} label={t.advTrades} />
             <div style={{ ...F, fontSize: 11, fontWeight: 600, color: C.gray }}>
               Tasu {(transactionFee * 100).toFixed(1)}%
             </div>
@@ -225,6 +218,8 @@ function AssetCard({ asset, shares, totalValue, canBuy, canTrade, onInfo, onBuy,
   onSell: (a: AssetDefinition) => void;
   onSetQuantity: (a: AssetDefinition, q: number) => void;
 }) {
+  const { lang } = useLang();
+  const t = T[lang];
   const canSell = shares > 0 && canTrade;
   const canBuyFinal = canBuy && canTrade;
   const [inputVal, setInputVal] = useState(String(shares));
@@ -236,7 +231,11 @@ function AssetCard({ asset, shares, totalValue, canBuy, canTrade, onInfo, onBuy,
     else setInputVal(String(shares));
   };
 
-  const regionLabel = REGION_LABELS[asset.region] ?? asset.region;
+  const sharedVisual = getSharedAssetVisual(asset.ticker);
+  const regionLabel = sharedVisual?.categoryKey && t[sharedVisual.categoryKey]
+    ? t[sharedVisual.categoryKey]
+    : (REGION_LABELS[asset.region] ?? asset.region);
+  const { name } = getAssetDisplay(asset, lang);
 
   return (
     <div style={{ background: C.white, borderRadius: 12, padding: '15px 18px', border: `1px solid ${C.creamy}`, opacity: canTrade ? 1 : 0.7 }}>
@@ -244,7 +243,7 @@ function AssetCard({ asset, shares, totalValue, canBuy, canTrade, onInfo, onBuy,
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <Logo ticker={asset.ticker} />
           <div>
-            <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#103088', lineHeight: 1.2 }}>{asset.name}</div>
+            <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#103088', lineHeight: 1.2 }}>{name}</div>
             <div style={{ ...F, fontSize: 12, color: C.gray, marginTop: 2 }}>{formatCurrency(asset.pricePerUnit)}</div>
           </div>
         </div>
@@ -280,7 +279,14 @@ function AssetCard({ asset, shares, totalValue, canBuy, canTrade, onInfo, onBuy,
 
 /* ─── Modal ─── */
 function Modal({ asset, onClose }: { asset: AssetDefinition | null; onClose: () => void }) {
+  const { lang } = useLang();
+  const t = T[lang];
   if (!asset) return null;
+  const { name, description } = getAssetDisplay(asset, lang);
+  const sharedVisual = getSharedAssetVisual(asset.ticker);
+  const regionLabel = sharedVisual?.categoryKey && t[sharedVisual.categoryKey]
+    ? t[sharedVisual.categoryKey]
+    : (REGION_LABELS[asset.region] ?? asset.region);
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(75,90,120,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
       <div onClick={e => e.stopPropagation()} style={{ ...F, background: C.white, borderRadius: 16, padding: '32px 36px 36px', width: 640, maxWidth: '100%', boxShadow: '0 16px 64px rgba(0,0,0,0.18)' }}>
@@ -288,17 +294,17 @@ function Modal({ asset, onClose }: { asset: AssetDefinition | null; onClose: () 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Logo ticker={asset.ticker} size={64} />
             <div>
-              <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>{asset.name}</div>
+              <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>{name}</div>
               <div style={{ ...F, fontSize: 15, color: C.slate2, marginTop: 6 }}>{formatCurrency(asset.pricePerUnit)}</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingTop: 4 }}>
-            <Badge label={REGION_LABELS[asset.region] ?? asset.region} />
+            <Badge label={regionLabel} />
             <span style={{ ...F, fontSize: 13, color: C.gray2 }}>{asset.ticker}</span>
           </div>
         </div>
         <p style={{ ...F, fontSize: 15, color: C.gray, lineHeight: 1.75, margin: '0 0 32px' }}>
-          {asset.description || `${asset.name} — ${asset.sector} sector asset.`}
+          {description}
         </p>
         <button onClick={onClose} style={{ ...F, width: '100%', height: 50, background: C.white, border: `1.5px solid ${C.creamy}`, borderRadius: 10, fontSize: 16, fontWeight: 400, color: C.slate, cursor: 'pointer' }}>
           Sulge
@@ -310,6 +316,8 @@ function Modal({ asset, onClose }: { asset: AssetDefinition | null; onClose: () 
 
 /* ─── Main Component ─── */
 interface PortfolioBuilderProps {
+  teamName: string;
+  investors: string;
   currentYear: number;
   totalBudget: number;
   initialHoldings?: { assetId: string; investedAmount: number }[];
@@ -328,10 +336,12 @@ interface PortfolioBuilderProps {
 }
 
 export default function PortfolioBuilder({
-  currentYear, totalBudget, initialHoldings, onAdvanceYear, onEndGame,
+  teamName, investors, currentYear, totalBudget, initialHoldings, onAdvanceYear, onEndGame,
   researchCost, researchHint, canAffordResearch, onResearch,
   isLastYear, midYearNewsSeen, tradesUsed, maxTrades, transactionFee, onTradeUsed,
 }: PortfolioBuilderProps) {
+  const { lang } = useLang();
+  const t = T[lang];
   const [portfolio, setPortfolio] = useState<{ assetId: string; investedAmount: number }[]>(initialHoldings ?? []);
   const [modalAsset, setModalAsset] = useState<AssetDefinition | null>(null);
 
@@ -342,8 +352,6 @@ export default function PortfolioBuilder({
     if (!canTrade) return;
     const costWithFee = asset.pricePerUnit * (1 + transactionFee);
     if (availableCash < costWithFee) return;
-    const current = portfolio.find(p => p.assetId === asset.id)?.investedAmount ?? 0;
-    if (current + asset.pricePerUnit > MAX_PER_ASSET) return;
     setPortfolio(prev => {
       const existing = prev.find(p => p.assetId === asset.id);
       if (existing) {
@@ -375,7 +383,7 @@ export default function PortfolioBuilder({
     setPortfolio(prev => {
       const otherTotal = prev.filter(p => p.assetId !== asset.id).reduce((s, p) => s + p.investedAmount, 0);
       const availableForThis = totalBudget - otherTotal;
-      const maxInvest = Math.min(MAX_PER_ASSET, Math.max(0, availableForThis));
+      const maxInvest = Math.max(0, availableForThis);
       const maxShares = Math.floor(maxInvest / asset.pricePerUnit);
       const targetShares = Math.min(q, maxShares);
       const targetInvested = targetShares * asset.pricePerUnit;
@@ -446,6 +454,8 @@ export default function PortfolioBuilder({
       <Modal asset={modalAsset} onClose={() => setModalAsset(null)} />
 
       <PortfolioHeader
+        teamName={teamName}
+        investors={investors}
         cash={availableCash}
         etfVal={catValues.etf}
         stocksVal={catValues.stocks}
@@ -479,7 +489,7 @@ export default function PortfolioBuilder({
             ...F, fontSize: 13, fontWeight: 700, color: C.navy, background: C.cream,
             border: `1px solid ${C.creamy}`, borderRadius: 10, padding: '12px 18px',
           }}>
-            Lugesid aasta keskpaiga uudiseid. Kohanda portfelli vastavalt ja vajuta edasi.
+            {t.advMidYearRead}
           </div>
         </div>
       )}
@@ -491,7 +501,7 @@ export default function PortfolioBuilder({
             ...F, fontSize: 12, fontWeight: 600, color: C.slate,
             background: C.cream, border: `1px solid ${C.creamy}`, borderRadius: 8, padding: '8px 14px',
           }}>
-            Tehingutasu: {formatCurrency(feeAmount)}
+            {t.advFeeNotice}: {formatCurrency(feeAmount)}
           </div>
         </div>
       )}
@@ -507,8 +517,7 @@ export default function PortfolioBuilder({
                   const pos = portfolio.find(p => p.assetId === a.id);
                   const shares = pos ? Math.round(pos.investedAmount / a.pricePerUnit) : 0;
                   const invested = pos?.investedAmount ?? 0;
-                  const atLimit = invested + a.pricePerUnit > MAX_PER_ASSET;
-                  const canBuy = availableCash >= a.pricePerUnit * (1 + transactionFee) && !atLimit;
+                  const canBuy = availableCash >= a.pricePerUnit * (1 + transactionFee);
                   return (
                     <AssetCard
                       key={a.id}
@@ -543,8 +552,8 @@ export default function PortfolioBuilder({
           {midYearNewsSeen
             ? 'Kinnita portfell ja jätka →'
             : nextYear <= 2035
-              ? `Edasi aastasse ${nextYear} →`
-              : 'Lõpeta mäng →'}
+              ? `${t.advNextYearTo} ${nextYear} →`
+              : `${t.advEndGame} →`}
           <RocketIcon color="#fff" />
         </button>
         {!isFirstYear && (

@@ -9,6 +9,9 @@ import type { BenchmarkResult } from '@/simulation/benchmark';
 import { buildLeaderboard, buildLeaderboardAsync } from '@/lib/leaderboard';
 import { useState, useEffect } from 'react';
 import { C, F, formatCurrency } from '@/lib/theme';
+import { useLang } from '../../contexts/LangContext';
+import { T } from '../../contexts/translations';
+import { getAssetDisplay } from '@/lib/assetDisplay';
 
 interface SimulationResultsProps {
   result: SimulationOutput;
@@ -20,6 +23,8 @@ interface SimulationResultsProps {
 }
 
 export default function SimulationResults({ result, initialInvestment, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
+  const { lang } = useLang();
+  const t = T[lang];
   const { years, finalPortfolioValue, finalCashBalance } = result;
   const assetMap = new Map(ASSET_CATALOG.map(a => [a.id, a]));
 
@@ -42,8 +47,8 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
   });
 
   const chartConfig: any = {
-    value: { label: 'Sinu portfell', color: C.blue },
-    ...(benchmarkData ? { benchmark: { label: 'Passiivne indeks', color: C.gray } } : {}),
+    value: { label: t.advYourPortfolio, color: C.blue },
+    ...(benchmarkData ? { benchmark: { label: t.advPassiveIndex, color: C.gray } } : {}),
   };
 
   const lastYear = years[years.length - 1];
@@ -58,9 +63,9 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
   }).filter(Boolean).sort((a, b) => b!.totalReturn - a!.totalReturn) ?? [];
 
   const scoreBarItems = [
-    { label: 'Tootlus', value: score.returnScore, max: 40, color: '#4A90D9' },
-    { label: 'Hajutatus', value: score.diversificationScore, max: 30, color: C.tan },
-    { label: 'Stabiilsus', value: score.consistencyScore, max: 30, color: C.cream },
+    { label: t.advScoreReturn, value: score.returnScore, max: 40, color: '#4A90D9' },
+    { label: t.advScoreDiversification, value: score.diversificationScore, max: 30, color: C.tan },
+    { label: t.advScoreConsistency, value: score.consistencyScore, max: 30, color: C.cream },
   ];
 
   const inner = { maxWidth: 800, margin: '0 auto', padding: '40px 24px' } as const;
@@ -87,12 +92,12 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
       <div style={{ background: C.bg }}>
         <div style={{ ...inner, textAlign: 'center' as const }}>
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>Simulatsioon lõppenud</div>
+            <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>{t.advSimulationEnded}</div>
             <h1 style={{ ...F, fontSize: 48, fontWeight: 800, color: C.navy, margin: '0 0 8px', letterSpacing: '-0.03em' }}>
-              Tulemused
+              {t.advResults}
             </h1>
             <div style={{ ...F, fontSize: 16, color: C.slate }}>
-              {years[0]?.year}–{years[years.length - 1]?.year} · {years.length} aastat · {teamName}
+              {years[0]?.year}–{years[years.length - 1]?.year} · {years.length} {t.advYearsAgo} · {teamName}
             </div>
           </motion.div>
         </div>
@@ -108,7 +113,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
             style={{ color: C.white, textAlign: 'center' as const }}
           >
             <div style={{ ...F, fontSize: 13, fontWeight: 600, color: C.gray, marginBottom: 4, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
-              Sinu tulemus
+              {t.advYourScore}
             </div>
             <div style={{ ...F, fontSize: 64, fontWeight: 800, color: C.white, lineHeight: 1, marginBottom: 4 }}>
               {score.totalScore}
@@ -121,7 +126,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
                 ...F, fontSize: 14, fontWeight: 600, marginBottom: 20,
                 color: beatBenchmark ? '#7dd87d' : C.tan,
               }}>
-                Passiivse indeksi suhtes: {beatBenchmark ? '+' : ''}{benchmarkDiff}%
+                {t.advVsBenchmark}: {beatBenchmark ? '+' : ''}{benchmarkDiff}%
               </div>
             )}
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
@@ -149,7 +154,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>Saavutused</h2>
+              <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{t.advAchievements}</h2>
               <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.gray }}>{earnedCount}/{achievements.length}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
@@ -183,21 +188,21 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' as const }}>
               <div>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Investeeritud</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advInvested}</div>
                 <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(totalInvested)}</div>
               </div>
               <div>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Lõppväärtus</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advFinalValue}</div>
                 <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.navy }}>{formatCurrency(finalPortfolioValue)}</div>
               </div>
               <div>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Tootlus</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advReturn}</div>
                 <div style={{ ...F, fontSize: 20, fontWeight: 700, color: isPositive ? C.blue : C.tan }}>
                   {isPositive ? '+' : ''}{totalReturn.toFixed(1)}%
                 </div>
               </div>
               <div>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Sularaha</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advCash}</div>
                 <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(finalCashBalance)}</div>
               </div>
             </div>
@@ -211,17 +216,17 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>
-                Portfelli väärtus aastate lõikes
+                {t.advPortfolioOverYears}
               </h2>
               {benchmarkData && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 3, background: C.blue, borderRadius: 2 }} />
-                    <span style={{ ...F, fontSize: 11, color: C.gray }}>Sinu portfell</span>
+                    <span style={{ ...F, fontSize: 11, color: C.gray }}>{t.advYourPortfolio}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 12, height: 3, background: C.gray, borderRadius: 2 }} />
-                    <span style={{ ...F, fontSize: 11, color: C.gray }}>Passiivne indeks</span>
+                    <span style={{ ...F, fontSize: 11, color: C.gray }}>{t.advPassiveIndex}</span>
                   </div>
                 </div>
               )}
@@ -246,12 +251,13 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
       <div style={{ background: C.bg }}>
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5 }}>
-            <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>Varade kokkuvõte</h2>
+            <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>{t.advAssetSummary}</h2>
             {holdingSummary.map((item, i) => {
               if (!item) return null;
               const { asset, totalReturn: tr } = item;
               const pos = tr >= 0;
               const pct = (tr * 100).toFixed(1);
+              const { name } = getAssetDisplay(asset, lang);
               return (
                 <div key={asset.id} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -267,14 +273,14 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
                     </div>
                     <div>
                       <div style={{ ...F, fontSize: 14, fontWeight: 700, color: C.navy }}>{asset.ticker}</div>
-                      <div style={{ ...F, fontSize: 12, color: C.gray }}>{asset.name}</div>
+                      <div style={{ ...F, fontSize: 12, color: C.gray }}>{name}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' as const }}>
                     <div style={{ ...F, fontSize: 14, fontWeight: 700, color: pos ? C.blue : C.tan }}>
                       {pos ? '+' : ''}{pct}%
                     </div>
-                    <div style={{ ...F, fontSize: 11, color: C.gray }}>kogu periood</div>
+                    <div style={{ ...F, fontSize: 11, color: C.gray }}>{t.advWholePeriod}</div>
                   </div>
                 </div>
               );
@@ -287,7 +293,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
       <div style={{ background: C.white }}>
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.5 }}>
-            <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>Aastate ülevaade</h2>
+            <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>{t.advYearOverview}</h2>
             {years.map((yr, i) => {
               const pct = (yr.totalPortfolioReturn * 100).toFixed(1);
               const pos = yr.totalPortfolioReturn >= 0;
@@ -304,7 +310,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
                     )}
                     {yr.liquidationEvents && yr.liquidationEvents.length > 0 && (
                       <span style={{ ...F, fontSize: 10, fontWeight: 700, color: C.navy, background: C.creamy, padding: '2px 6px', borderRadius: 4 }}>
-                        Sundmüük
+                        {t.advForcedSale}
                       </span>
                     )}
                     {yr.appliedDecision && yr.appliedDecision.label && (
@@ -330,14 +336,14 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
       <div style={{ background: C.cream }}>
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75, duration: 0.5 }}>
-            <h2 style={{ ...F, fontSize: 24, fontWeight: 800, color: C.navy, margin: '0 0 24px' }}>Edetabel</h2>
+            <h2 style={{ ...F, fontSize: 24, fontWeight: 800, color: C.navy, margin: '0 0 24px' }}>{t.advLeaderboard}</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px', width: 80 }}>Koht</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px' }}>Tiim</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'right', padding: '0 0 16px' }}>Väärtus</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.tan, textAlign: 'right', padding: '0 0 16px', width: 140 }}>Kasum %</th>
+                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px', width: 80 }}>{t.advRank}</th>
+                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px' }}>{t.advTeam}</th>
+                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'right', padding: '0 0 16px' }}>{t.advValue}</th>
+                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.tan, textAlign: 'right', padding: '0 0 16px', width: 140 }}>{t.advProfitPct}</th>
                 </tr>
               </thead>
               <tbody>
@@ -373,7 +379,7 @@ export default function SimulationResults({ result, initialInvestment, onReset, 
                 fontSize: 16, fontWeight: 700, color: C.navy, cursor: 'pointer',
               }}
             >
-              Alusta uuesti
+              {t.advStartOver}
             </button>
           </motion.div>
         </div>

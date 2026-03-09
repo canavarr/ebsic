@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PortfolioBuilder from '@/components/PortfolioBuilder';
 import EventsScreen from '@/components/EventsScreen';
 import SimulationResults from '@/components/SimulationResults';
@@ -35,6 +36,7 @@ type GamePhase = 'name' | 'portfolio' | 'events' | 'final';
 interface GameState {
   phase: GamePhase;
   teamName: string;
+  investors: string;
   currentYear: number;
   holdings: PortfolioHolding[];
   cashBalance: number;
@@ -55,9 +57,11 @@ interface GameState {
 
 interface IndexProps {
   initialTeamName?: string;
+  initialInvestors?: string;
 }
 
-const Index = ({ initialTeamName }: IndexProps) => {
+const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
+  const navigate = useNavigate();
   const rngRef = useRef<(() => number) | null>(null);
   const timelineRef = useRef<Map<number, YearScenario> | null>(null);
   const seedRef = useRef<number>(0);
@@ -77,6 +81,7 @@ const Index = ({ initialTeamName }: IndexProps) => {
     return {
       phase: startPhase,
       teamName: initialTeamName || '',
+      investors: initialInvestors || '',
       currentYear: START_YEAR,
       holdings: [],
       cashBalance: INITIAL_BUDGET,
@@ -268,32 +273,8 @@ const Index = ({ initialTeamName }: IndexProps) => {
   }, []);
 
   const handleReset = useCallback(() => {
-    const seed = generateWeeklySeed();
-    seedRef.current = seed;
-    rngRef.current = createSeededRandom(seed);
-    const timelineRng = createSeededRandom(seed + 1);
-    timelineRef.current = generateScenarioTimeline(timelineRng);
-
-    setGame({
-      phase: 'name',
-      teamName: '',
-      currentYear: START_YEAR,
-      holdings: [],
-      cashBalance: INITIAL_BUDGET,
-      totalBudget: INITIAL_BUDGET,
-      previousMacro: null,
-      yearHistory: [],
-      initialInvestment: INITIAL_BUDGET,
-      researchedYears: [],
-      researchHints: {},
-      benchmarkData: null,
-      showMidYearNews: false,
-      midYearNewsSeen: false,
-      tradesUsedThisYear: 0,
-      pendingHoldings: null,
-      pendingCash: 0,
-    });
-  }, []);
+    navigate('/', { replace: true });
+  }, [navigate]);
 
   const builderHoldings = game.holdings
     .map(h => ({ assetId: h.assetId, investedAmount: h.valueAtStart }))
@@ -304,7 +285,7 @@ const Index = ({ initialTeamName }: IndexProps) => {
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
-      <EBSNavbar showBack />
+      <EBSNavbar />
 
       {game.phase !== 'final' && game.phase !== 'name' && (
         <YearStepper currentYear={game.currentYear} completedYears={completedYears} />
@@ -330,6 +311,8 @@ const Index = ({ initialTeamName }: IndexProps) => {
       <main>
         {game.phase === 'portfolio' && (
           <PortfolioBuilder
+            teamName={game.teamName}
+            investors={game.investors}
             currentYear={game.currentYear}
             totalBudget={game.totalBudget}
             initialHoldings={game.currentYear > START_YEAR ? builderHoldings : undefined}

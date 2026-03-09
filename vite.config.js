@@ -8,6 +8,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   base: process.env.VITE_BASE || '/ebsic/',
+  resolve: {
+    alias: { '@': resolve(__dirname, 'src/advanced') },
+  },
   plugins: [
     react(),
     {

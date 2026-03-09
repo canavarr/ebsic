@@ -1,69 +1,23 @@
-import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { TooltipProvider } from '@radix-ui/react-tooltip'
+import AdvancedIndex from './advanced/pages/Index'
+import { C, F, formatCurrency } from './lib/theme'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { db, analytics } from './firebase'
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { logEvent } from 'firebase/analytics'
+import { LangContext, useLang } from './contexts/LangContext'
+import EBSNavbar from './components/EBSNavbar'
+import { T } from './contexts/translations'
 
 const LANG_KEY = 'ebsic_lang'
 const BASE = import.meta.env.BASE_URL
 
-const T = {
-  et: {
-    navClub: 'Investeerimisklubi',
-    navEst: 'EST', navEn: 'ENG',
-    headerInitial: 'Algne summa', headerTotal: 'Koguväärtus', headerGain: 'Kogukasum', headerGainPct: 'Kasum %',
-    headerCash: 'Raha', headerStocks: 'Aktsiad', headerCrypto: 'Krüpto', headerCommodities: 'Varad',
-    headerAllocation: 'Portfelli jaotus', teamMembers: 'Tiimiliikmed',
-    modalClose: 'Sulge',
-    cardInfo: 'Info', cardValue: 'Väärtus',
-    landingTitle: 'Investeerimisklubi Portfellilahing',
-    landingIntro: "Aasta on 2015 ja sinu tiimil on 10 000 € algkapitali portfelli loomiseks. Ees ootab 10 aastat pööraseid maailmasündmusi - majanduskriisid, pandeemia, tehisintellekti revolutsioon ja krüptobuum.",
-    landingQuestion: "Kas sinu tiim suudab ehitada portfelli, mis elab üle kriisid ja leiab üles tuleviku võitjad?",
-    formStart: 'Alusta mängu', formPortfolioName: 'Portfelli nimi', formInvestors: 'Investorid',
-    formOpen: 'Ava portfell', formDefaultPortfolio: 'Portfell',
-    formNameTaken: 'See portfelli nimi on juba kasutusel',
-    formChecking: 'Kontrollin...',
-    sectionStocks: 'Aktsiad', sectionCrypto: 'Krüptoraha', sectionCommodities: 'Toorained',
-    confirmTitle: 'Oled kindel?', confirmYes: 'Kinnita', confirmNo: 'Tühista', confirmPortfolio: 'Kinnita portfell',
-    resultsPositions: 'Portfelli positsioonid', resultsInvested: 'investeeritud',
-    resultsInvestedLabel: 'Investeeritud:', resultsValue2025: 'Väärtus (2025):', resultsGainLoss: 'Kasum / Kahjum:',
-    leaderboard: 'Edetabel', lbRank: 'Koht', lbTeam: 'Tiim', lbTeamMembers: 'Tiimiliikmed', lbDateTime: 'Kuupäev', lbValue: 'Väärtus', lbGainPct: 'Kasum %', lbBreakdown: 'Portfell', lbCategory: 'Jaotus', lbYou: 'sina',
-    restart: 'Alusta uuesti',
-    categoryRaha: 'Raha', categoryKrüpto: 'Krüpto', categoryTooraine: 'Tooraine',
-    categoryUSA: 'USA', categoryEesti: 'Eesti', categoryHolland: 'Holland', categorySaksamaa: 'Saksamaa', categorySoome: 'Soome', categoryŠveits: 'Šveits', categoryTaani: 'Taani', categoryHiina: 'Hiina',
-  },
-  en: {
-    navClub: 'Investment Club',
-    navEst: 'EST', navEn: 'ENG',
-    headerInitial: 'Initial amount', headerTotal: 'Total value', headerGain: 'Total gain', headerGainPct: 'Gain %',
-    headerCash: 'Cash', headerStocks: 'Stocks', headerCrypto: 'Crypto', headerCommodities: 'Commodities',
-    headerAllocation: 'Portfolio allocation', teamMembers: 'Team members',
-    modalClose: 'Close',
-    cardInfo: 'Info', cardValue: 'Value',
-    landingTitle: 'Investment Club Portfolio Showdown',
-    landingIntro: "The year is 2015 and your team has €10,000 in starting capital to build a portfolio. Ahead lie 10 years of dramatic world events - economic crises, pandemic, AI revolution and crypto boom.",
-    landingQuestion: "Can your team build a portfolio that survives the crises and finds the future winners?",
-    formStart: 'Start game', formPortfolioName: 'Portfolio name', formInvestors: 'Investors',
-    formOpen: 'Open portfolio', formDefaultPortfolio: 'Portfolio',
-    formNameTaken: 'This portfolio name is already taken',
-    formChecking: 'Checking...',
-    sectionStocks: 'Stocks', sectionCrypto: 'Cryptocurrencies', sectionCommodities: 'Commodities',
-    confirmTitle: 'Are you sure?', confirmYes: 'Confirm', confirmNo: 'Cancel', confirmPortfolio: 'Confirm portfolio',
-    resultsPositions: 'Portfolio positions', resultsInvested: 'invested',
-    resultsInvestedLabel: 'Invested:', resultsValue2025: 'Value (2025):', resultsGainLoss: 'Profit / Loss:',
-    leaderboard: 'Leaderboard', lbRank: 'Rank', lbTeam: 'Team', lbTeamMembers: 'Team members', lbDateTime: 'Date & time', lbValue: 'Value', lbGainPct: 'Gain %', lbBreakdown: 'Portfolio', lbCategory: 'Split', lbYou: 'you',
-    restart: 'Start over',
-    categoryRaha: 'Cash', categoryKrüpto: 'Crypto', categoryTooraine: 'Commodities',
-    categoryUSA: 'USA', categoryEesti: 'Estonia', categoryHolland: 'Netherlands', categorySaksamaa: 'Germany', categorySoome: 'Finland', categoryŠveits: 'Switzerland', categoryTaani: 'Denmark', categoryHiina: 'China',
-  },
-}
 const CATEGORY_LABEL_KEY = { USA: 'categoryUSA', Eesti: 'categoryEesti', Holland: 'categoryHolland', Saksamaa: 'categorySaksamaa', Soome: 'categorySoome', Šveits: 'categoryŠveits', Taani: 'categoryTaani', Hiina: 'categoryHiina', Krüpto: 'categoryKrüpto', Tooraine: 'categoryTooraine', Raha: 'categoryRaha' }
 function getCategoryLabel(cat, t) {
   return (CATEGORY_LABEL_KEY[cat] && t[CATEGORY_LABEL_KEY[cat]]) || cat
 }
-
-const LangContext = createContext({ lang: 'et', setLang: () => {} })
-const useLang = () => useContext(LangContext)
 
 const MOBILE_BREAKPOINT = 768
 
@@ -141,29 +95,6 @@ async function addToLeaderboard(entry) {
   }
 }
 const TIMELINE_YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
-
-const C = {
-  navy: '#0B1D3F',
-  blue: '#113088',
-  blue2: '#00318D',
-  slate: '#4C5564',
-  slate2: '#5F6266',
-  slate3: '#2D2F31',
-  gray: '#929FC2',
-  gray2: '#9DA5B2',
-  tan: '#C2B194',
-  tan2: '#B8965C',
-  cream: '#F8F4EF',
-  creamy: '#E8DECA',
-  bg: '#F0F2F7',
-  white: '#FFFFFF',
-}
-
-const formatCurrency = (num, locale = 'et-EE') =>
-  new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(num) + ' €'
 
 const ASSET_DATA = [
   { id: 'aapl', name: 'Apple Inc.', ticker: 'AAPL', price2015: 27, price2025: 190, growthRate: 6.037, category: 'USA', description: 'Apple disainib, toodab ja müüb nutitelefone, personaalarvuteid, tahvelarvuteid, kantavaid seadmeid ja pakub nendega seotud tarkvara ja teenuseid.', historicalEvent: '2015-2016: iPhone müük kasvab. 2018: Apple saab esimeseks $1 triljoni ettevõtteks. 2020: COVID suurendab nõudlust. 2024-2025: AI fookus.' },
@@ -246,8 +177,6 @@ const TICKER_ICON = {
   TSLA: 'TSLA', UBER: 'UBER', WDI: 'WDI', BTC: 'BTC', XRP: 'XRP', XAU: 'XAU', BRENT: 'BRENT', CASH: 'CASH',
 }
 
-
-const F = { fontFamily: 'Mulish,sans-serif' }
 if (typeof document !== 'undefined') {
   const l = document.createElement('link')
   l.rel = 'stylesheet'
@@ -256,11 +185,6 @@ if (typeof document !== 'undefined') {
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
-const GlobeIcon = ({ white }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-    <path fill={white ? '#fff' : C.blue2} d="M11.667.667a11,11,0,1,0,11,11,11.012,11.012,0,0,0-11-11m8.942,10H16.625a15.419,15.419,0,0,0-2.637-7.686,9.014,9.014,0,0,1,6.62,7.686m-11.906,2h5.927a13.437,13.437,0,0,1-2.963,7.486A13.439,13.439,0,0,1,8.7,12.667m0-2A13.443,13.443,0,0,1,11.667,3.18a13.441,13.441,0,0,1,2.963,7.488Zm.642-7.686a15.419,15.419,0,0,0-2.637,7.686H2.725a9.014,9.014,0,0,1,6.62-7.686m-6.62,9.685H6.707a15.412,15.412,0,0,0,2.636,7.684,9.015,9.015,0,0,1-6.618-7.684M13.99,20.351a15.414,15.414,0,0,0,2.637-7.684h3.981a9.013,9.013,0,0,1-6.618,7.684" transform="translate(0.334 0.334)" />
-  </svg>
-)
 const RocketIcon = ({ color = C.slate3, size = 18 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 25 25">
     <path fill={color} d="M6.106,18.05c-1.7,1.427-2.244,5.181-2.3,5.6a.625.625,0,0,0,.62.708.744.744,0,0,0,.083-.005c.423-.057,4.177-.6,5.6-2.3a2.839,2.839,0,0,0-4-4.007m3.048,3.2c-.747.89-2.68,1.452-3.961,1.717.265-1.281.827-3.214,1.717-3.961h0a1.646,1.646,0,0,1,1.064-.389,1.57,1.57,0,0,1,1.18,2.634M25.362,3.425a.625.625,0,0,0-.621-.625h-.09A13.937,13.937,0,0,0,13.043,8.956c-1.066-.286-3.745-.851-5.32.2C6.041,10.28,5.436,13.38,5.372,13.73a.625.625,0,0,0,.615.736h4.949L13.7,17.225v4.949a.626.626,0,0,0,.737.615c.349-.064,3.449-.668,4.575-2.352,1.045-1.568.49-4.23.2-5.305A13.874,13.874,0,0,0,25.362,3.425M8.417,10.195c.933-.622,2.758-.39,3.923-.124a23.533,23.533,0,0,0-1.562,3.145h-4a5.8,5.8,0,0,1,1.643-3.021m9.551,9.549a5.8,5.8,0,0,1-3.022,1.643v-4A23.97,23.97,0,0,0,18.1,15.844c.264,1.166.489,2.973-.128,3.9m.185-5.389a22.69,22.69,0,0,1-3.679,1.881L11.927,13.69a22.4,22.4,0,0,1,1.881-3.632,12.7,12.7,0,0,1,10.29-6,12.673,12.673,0,0,1-5.945,10.294" transform="translate(-1.821 -1.341)" />
@@ -283,31 +207,6 @@ const RemoveIcon = ({ color = '#fff' }) => (
 )
 
 // ─── Components ───────────────────────────────────────────────────────────────
-function Navbar({ dark }) {
-  const { lang, setLang } = useLang()
-  const t = T[lang]
-  const mobile = useIsMobile()
-  const pad = mobile ? 16 : 48
-  const textColor = dark ? C.white : C.blue2
-  return (
-    <nav style={{
-      ...F, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: `0 ${pad}px`, height: 72, flexShrink: 0, position: 'relative', zIndex: 10,
-      background: dark ? 'transparent' : C.white,
-      borderBottom: dark ? 'none' : '1px solid #E8EAF0',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 14 }}>
-        <img src={`${BASE}icons/ebs.svg`} alt="EBS" style={{ width: 38, height: 35 }} />
-        <span style={{ ...F, fontSize: mobile ? 13 : 15, fontWeight: 500, color: textColor }}>{t.navClub}</span>
-      </div>
-      <button onClick={() => setLang(lang === 'et' ? 'en' : 'et')} style={{ ...F, display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', fontSize: 14, fontWeight: 700, color: textColor, cursor: 'pointer' }}>
-        {lang === 'et' ? t.navEst : t.navEn}
-        <GlobeIcon white={dark} />
-      </button>
-    </nav>
-  )
-}
-
 function Badge({ label }) {
   return <span style={{ background: '#EBEFF2', borderRadius: 6, padding: '3px 9px', fontSize: 11, fontWeight: 700, color: C.gray, whiteSpace: 'nowrap', flexShrink: 0 }}>{label}</span>
 }
@@ -550,28 +449,38 @@ function AssetCard({ asset, shares, totalValue, canBuy, onInfo, onBuy, onSell, o
 }
 
 // ─── Landing ──────────────────────────────────────────────────────────────────
-function Landing({ onStart }) {
+function Landing({ onStart, onStartAdvanced }) {
   const { lang } = useLang()
   const t = T[lang]
   const mobile = useIsMobile()
+  const [mode, setMode] = useState('algajale') // 'algajale' | 'edasijõudnule'
   const [n, setN] = useState('')
   const [inv, setInv] = useState('')
   const [checking, setChecking] = useState(false)
   const [nameError, setNameError] = useState('')
+  const landingIntro = mode === 'algajale' ? t.landingIntroAlgajale : t.landingIntroEdasijõudnule
   const handleStart = async () => {
     const name = n.trim() || t.formDefaultPortfolio
     setNameError('')
     setChecking(true)
     try {
-      const taken = await isPortfolioNameTaken(name)
-      if (taken) {
-        setNameError(t.formNameTaken)
-        return
+      if (mode === 'algajale') {
+        const taken = await isPortfolioNameTaken(name)
+        if (taken) {
+          setNameError(t.formNameTaken)
+          return
+        }
+        onStart({ name, investors: inv })
+      } else {
+        onStartAdvanced({ name, investors: inv })
       }
-      onStart({ name, investors: inv })
     } catch (err) {
       console.warn('Name check failed, allowing through:', err)
-      onStart({ name, investors: inv })
+      if (mode === 'algajale') {
+        onStart({ name, investors: inv })
+      } else {
+        onStartAdvanced({ name, investors: inv })
+      }
     } finally {
       setChecking(false)
     }
@@ -579,7 +488,7 @@ function Landing({ onStart }) {
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.navy, display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: C.white, borderBottom: '1px solid #e8eaf0', flexShrink: 0 }}>
-        <Navbar dark={false} />
+        <EBSNavbar dark={false} />
       </div>
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
         <div style={{ position: 'absolute', left: '-18%', top: '50%', transform: 'translateY(-55%)', pointerEvents: 'none', zIndex: 1, opacity: mobile ? 0.3 : 1 }}>
@@ -595,13 +504,20 @@ function Landing({ onStart }) {
           <div style={{ ...F, fontSize: mobile ? 28 : 50, fontWeight: 300, color: C.gray2, lineHeight: 1.25, margin: '0 0 2px' }}>Estonian Business School</div>
           <div style={{ ...F, fontSize: mobile ? 26 : 50, fontWeight: 500, color: C.tan2, lineHeight: 1.25, margin: '0 0 24px' }}>{t.landingTitle}</div>
           <div style={{ ...F, fontSize: mobile ? 14 : 16.5, color: C.white, lineHeight: 1.78, maxWidth: 800, margin: '0 auto', padding: '0 8px' }}>
-            {t.landingIntro}
-            <br />{t.landingQuestion}
+            {landingIntro}
           </div>
         </div>
         <div style={{ position: 'relative', zIndex: 2, marginTop: 16, width: '100%', maxWidth: 448, padding: '0 16px', boxSizing: 'border-box' }}>
           <div style={{ background: C.cream, borderRadius: 12, padding: mobile ? '24px 20px 32px' : '32px 40px 44px', width: '100%', boxShadow: '0 8px 48px rgba(0,0,0,0.22)' }}>
             <div style={{ ...F, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1F3C8E', marginBottom: 28 }}>{t.formStart}</div>
+            <div style={{ display: 'flex', gap: 0, marginBottom: 24, background: '#E8DECA', borderRadius: 10, padding: 4 }}>
+              <button type="button" onClick={() => setMode('algajale')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', background: mode === 'algajale' ? C.creamy : 'transparent', color: mode === 'algajale' ? '#1F3C8E' : C.gray, transition: 'all 0.2s' }}>
+                {t.modeAlgajale}
+              </button>
+              <button type="button" onClick={() => setMode('edasijõudnule')} style={{ ...F, flex: 1, padding: '12px 16px', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', background: mode === 'edasijõudnule' ? '#e8eef8' : 'transparent', color: mode === 'edasijõudnule' ? '#1F3C8E' : C.gray, transition: 'all 0.2s' }}>
+                {t.modeEdasijõudnule}
+              </button>
+            </div>
             <div style={{ marginBottom: 16 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formPortfolioName} *</div>
               <input value={n} onChange={e => { setN(e.target.value); setNameError(''); }} style={{ display: 'block', width: '100%', height: 46, border: nameError ? '2px solid #D64045' : '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
@@ -693,7 +609,7 @@ function Build({ name, investors, portfolio, setPortfolio, onConfirm }) {
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
-      <Navbar />
+      <EBSNavbar />
       <Modal asset={modalAsset} onClose={() => setModalAsset(null)} />
       <Header name={name} investors={investors} portfolio={portfolio} />
       {sections.map(({ title, assets, bg }) => {
@@ -755,7 +671,7 @@ function YearScreen({ year, onNext }) {
   const nextYear = year + 1
   return (
     <div style={{ ...F, minHeight: '100vh', background: '#EDEEF2', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
+      <EBSNavbar />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: mobile ? 16 : 0 }}>
         {!mobile && <div style={{ position: 'absolute', left: 'calc(50% - 480px)', right: 'calc(50% - 480px)', top: '50%', height: 1, background: '#C4C9D8', width: 960 }} />}
         <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 12 : 0, position: 'relative', zIndex: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -857,7 +773,7 @@ function Results({ name, investors, portfolio, onReset }) {
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
-      <Navbar />
+      <EBSNavbar />
       <Header name={name} investors={investors} portfolio={portfolio} finals={{ total: totFin, gain: totGain, pct }} />
       {resultCards.length > 0 && (
         <div style={{ background: C.white, padding: mobile ? '24px 16px' : '36px 40px 40px' }}>
@@ -958,7 +874,7 @@ function GameMasterLeaderboard() {
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
-      <Navbar />
+      <EBSNavbar />
       <div style={{ background: C.cream, padding: mobile ? '24px 16px' : '36px 40px 40px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', overflowX: 'auto' }}>
           <h2 style={{ ...F, fontSize: mobile ? 18 : 22, fontWeight: 800, color: '#1F3C8E', margin: '0 0 20px' }}>{t.leaderboard}</h2>
@@ -992,7 +908,19 @@ function GameMasterLeaderboard() {
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
-export default function App() {
+function LandingPage() {
+  const navigate = useNavigate()
+  return (
+    <Landing
+      onStart={(d) => navigate('/classic', { state: d })}
+      onStartAdvanced={(d) => navigate('/advanced', { state: d })}
+    />
+  )
+}
+
+function ClassicGame() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [lang, setLangState] = useState(() => {
     try { return localStorage.getItem(LANG_KEY) || 'et' } catch { return 'et' }
   })
@@ -1000,56 +928,26 @@ export default function App() {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
   }, [])
-  const [screen, setScreen] = useState(() => {
-    try {
-      const h = (window.location.hash || '').toLowerCase()
-      const s = (window.location.search || '').toLowerCase()
-      const p = (window.location.pathname || '')
-      if (s.includes('view=results') || s.includes('gm=1') || h === '#results' || h === '#gm' || p.endsWith('/results')) return 'gm'
-    } catch {}
-    return 'landing'
-  })
-  const [game, setGame] = useState({})
+  const [screen, setScreen] = useState('build')
+  const [game, setGame] = useState(() => location.state || {})
   const [portfolio, setPortfolio] = useState([])
   const [timelineStep, setTimelineStep] = useState(-1)
-
   const step = timelineStep < 0 ? 0 : timelineStep
   const year = TIMELINE_YEARS[Math.min(step, TIMELINE_YEARS.length - 1)]
 
-  const [, setLoc] = useState(0)
   useEffect(() => {
-    const onNav = () => setLoc(n => n + 1)
-    window.addEventListener('popstate', onNav)
-    window.addEventListener('hashchange', onNav)
-    return () => {
-      window.removeEventListener('popstate', onNav)
-      window.removeEventListener('hashchange', onNav)
-    }
-  }, [])
-  const showGameMaster = (() => {
-    const href = window.location.href || ''
-    const p = window.location.pathname || ''
-    const h = (window.location.hash || '').toLowerCase()
-    const search = (window.location.search || '').toLowerCase()
-    if (href.includes('view=results') || href.includes('gm=1') || search.includes('view=results') || search.includes('gm=1')) return true
-    if (h === '#results' || h === '#gm') return true
-    if (p === '/results' || p === '/results/' || p.endsWith('/results')) return true
-    return false
-  })()
+    if (!location.state?.name) navigate('/', { replace: true })
+  }, [location.state, navigate])
 
   useEffect(() => {
-    if (analytics) {
-      logEvent(analytics, 'screen_view', { screen_name: showGameMaster ? 'game_master' : screen })
-    }
-  }, [screen, showGameMaster])
+    if (analytics) logEvent(analytics, 'screen_view', { screen_name: 'classic_' + screen })
+  }, [screen])
+
+  if (!location.state?.name) return null
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>
-      {showGameMaster || screen === 'gm' ? (
-        <GameMasterLeaderboard />
-      ) : screen === 'landing' ? (
-        <Landing onStart={d => { setGame(d); setPortfolio([]); setScreen('build'); }} />
-      ) : screen === 'build' ? (
+      {screen === 'build' ? (
         <Build
           name={game.name}
           investors={game.investors}
@@ -1071,9 +969,59 @@ export default function App() {
           name={game.name}
           investors={game.investors}
           portfolio={portfolio}
-          onReset={() => { setScreen('landing'); setGame({}); setPortfolio([]); setTimelineStep(-1); }}
+          onReset={() => navigate('/', { replace: true })}
         />
       ) : null}
+    </LangContext.Provider>
+  )
+}
+
+function AdvancedGame() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const state = location.state || {}
+  const teamName = state.teamName || state.name || ''
+  useEffect(() => {
+    if (!teamName) navigate('/', { replace: true })
+  }, [teamName, navigate])
+  if (!teamName) return null
+  return (
+    <TooltipProvider>
+      <AdvancedIndex initialTeamName={teamName} />
+    </TooltipProvider>
+  )
+}
+
+export default function App() {
+  const location = useLocation()
+  const [lang, setLangState] = useState(() => {
+    try { return localStorage.getItem(LANG_KEY) || 'et' } catch { return 'et' }
+  })
+  const setLang = useCallback((l) => {
+    setLangState(l)
+    try { localStorage.setItem(LANG_KEY, l) } catch {}
+  }, [])
+
+  const path = (location.pathname || '').toLowerCase()
+  const search = (location.search || '').toLowerCase()
+  const hash = (location.hash || '').toLowerCase()
+  const showGameMaster = path.includes('/results') || search.includes('view=results') || search.includes('gm=1') || hash === '#results' || hash === '#gm'
+
+  if (showGameMaster) {
+    return (
+      <LangContext.Provider value={{ lang, setLang }}>
+        <GameMasterLeaderboard />
+      </LangContext.Provider>
+    )
+  }
+
+  return (
+    <LangContext.Provider value={{ lang, setLang }}>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/classic" element={<ClassicGame />} />
+        <Route path="/advanced" element={<AdvancedGame />} />
+      </Routes>
     </LangContext.Provider>
   )
 }

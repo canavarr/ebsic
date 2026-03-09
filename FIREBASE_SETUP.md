@@ -29,9 +29,17 @@ firebase deploy --only firestore
 
 Or in Firebase Console → Firestore → Rules, paste the contents of `firestore.rules`.
 
-## 4. Optional: Firestore index
+## 4. Firestore indexes
 
-If the leaderboard query fails, Firebase will show an error with a link to create the index. For `orderBy('finalValue', 'desc')`, a single-field index is usually created automatically.
+**Classic leaderboard:** Single-field index on `finalValue` is usually created automatically.
+
+**Advanced leaderboard:** The `leaderboard_advanced` collection needs a composite index on `seed` (Ascending) + `finalValue` (Descending). Deploy indexes:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+Or use the `firestore.indexes.json` in this repo. If the Advanced leaderboard query fails, Firebase Console will show an error with a link to create the index.
 
 ## 5. Secure your API key (important for public deploys)
 

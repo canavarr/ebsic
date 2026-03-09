@@ -38,14 +38,15 @@ export function checkAchievements(
     earned: allSectorsInYear,
   });
 
-  // 3. Teemantkäed — never had a negative return year
+  // 3. Teemantkäed — never had a negative return year, AND had investments (not 100% cash)
+  const hadInvestmentsEveryYear = years.every(y => y.assetReturns.length > 0);
   const allPositive = years.every(y => y.totalPortfolioReturn >= 0);
   achievements.push({
     id: 'diamond-hands',
     title: 'Teemantkäed',
     description: 'Ükski aasta ei lõppenud negatiivse tootlusega',
     icon: '◆',
-    earned: allPositive,
+    earned: hadInvestmentsEveryYear && allPositive,
   });
 
   // 4. Dividendikuningas — earned >500€ total dividends

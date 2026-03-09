@@ -182,9 +182,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
     if (game.currentYear >= END_YEAR) {
       const benchmark = simulateBenchmark(timelineRef.current!, seedRef.current);
-      const firstY = game.yearHistory[0]?.year ?? START_YEAR;
-      const lastY = game.yearHistory[game.yearHistory.length - 1]?.year ?? END_YEAR;
-      const totalInvested = INITIAL_BUDGET + Math.max(0, lastY - firstY) * YEARLY_ADDITION;
+      const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
       const finalValue = game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance;
       const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
       saveScore(seedRef.current, game.teamName, finalValue, returnPct);
@@ -236,9 +234,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     }
 
     const benchmark = simulateBenchmark(timelineRef.current!, seedRef.current);
-    const firstY = newYearHistory[0]?.year ?? START_YEAR;
-    const lastY = newYearHistory[newYearHistory.length - 1]?.year ?? END_YEAR;
-    const totalInvested = INITIAL_BUDGET + Math.max(0, lastY - firstY) * YEARLY_ADDITION;
+    const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
     const finalValue = currentHoldings.reduce((s, h) => s + h.valueAtStart, 0) + currentCash;
     const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
     saveScore(seedRef.current, game.teamName, finalValue, returnPct);
@@ -357,6 +353,8 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
               }}
               initialInvestment={game.initialInvestment}
               yearlyAddition={YEARLY_ADDITION}
+              startYear={START_YEAR}
+              endYear={END_YEAR}
               onReset={handleReset}
               benchmarkData={game.benchmarkData ?? undefined}
               teamName={game.teamName}

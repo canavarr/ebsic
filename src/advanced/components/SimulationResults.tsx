@@ -17,6 +17,8 @@ interface SimulationResultsProps {
   result: SimulationOutput;
   initialInvestment: number;
   yearlyAddition?: number;
+  startYear?: number;
+  endYear?: number;
   onReset: () => void;
   benchmarkData?: BenchmarkResult;
   teamName: string;
@@ -24,16 +26,17 @@ interface SimulationResultsProps {
 }
 
 const DEFAULT_YEARLY_ADDITION = 1000;
+const DEFAULT_START_YEAR = 2026;
+const DEFAULT_END_YEAR = 2035;
 
-export default function SimulationResults({ result, initialInvestment, yearlyAddition = DEFAULT_YEARLY_ADDITION, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
+export default function SimulationResults({ result, initialInvestment, yearlyAddition = DEFAULT_YEARLY_ADDITION, startYear = DEFAULT_START_YEAR, endYear = DEFAULT_END_YEAR, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
   const { lang } = useLang();
   const t = T[lang];
   const { years, finalPortfolioValue, finalCashBalance } = result;
   const assetMap = new Map(ASSET_CATALOG.map(a => [a.id, a]));
 
-  const firstYear = years[0]?.year ?? 2026;
-  const lastYear = years[years.length - 1]?.year ?? 2035;
-  const yearlyAdditions = Math.max(0, lastYear - firstYear);
+  // Total invested = initial + (endYear - startYear) * yearly additions (always 9 for full 2026–2035 game)
+  const yearlyAdditions = Math.max(0, endYear - startYear);
   const totalInvested = initialInvestment + yearlyAdditions * yearlyAddition;
   const totalReturn = totalInvested > 0 ? ((finalPortfolioValue - totalInvested) / totalInvested) * 100 : 0;
   const isPositive = totalReturn >= 0;

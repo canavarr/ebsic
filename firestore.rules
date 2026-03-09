@@ -1,8 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Leaderboard: anyone can read and write (public game)
+    // Classic leaderboard: anyone can read and write (public game)
     match /leaderboard/{slug} {
+      allow read, write: if true;
+    }
+    // Advanced mode leaderboard: per-weekly-seed scores (public game)
+    match /leaderboard_advanced/{docId} {
       allow read, write: if true;
     }
   }

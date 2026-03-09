@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { calculateScore } from '@/simulation/scoring';
 import { checkAchievements } from '@/simulation/achievements';
 import type { BenchmarkResult } from '@/simulation/benchmark';
-import { buildLeaderboard, buildLeaderboardAsync } from '@/lib/leaderboard';
+import { buildLeaderboardAsync } from '@/lib/leaderboard';
 import { useState, useEffect } from 'react';
 import { C, F, formatCurrency } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
@@ -87,11 +87,11 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
     ? ((finalPortfolioValue - benchmarkData.finalValue) / benchmarkData.finalValue * 100).toFixed(1)
     : null;
 
-  // Leaderboard: initial sync, then async Firestore fetch
+  // Leaderboard: show player immediately, then fetch real Firestore data
   const yourReturnPct = ((finalPortfolioValue - totalInvested) / totalInvested) * 100;
-  const [leaderboard, setLeaderboard] = useState(() =>
-    buildLeaderboard(weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct)
-  );
+  const [leaderboard, setLeaderboard] = useState<{ name: string; value: number; returnPct: number; isYou?: boolean }[]>(() => [
+    { name: teamName, value: finalPortfolioValue, returnPct: yourReturnPct, isYou: true },
+  ]);
   useEffect(() => {
     buildLeaderboardAsync(weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct).then(setLeaderboard);
   }, [weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct]);

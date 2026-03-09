@@ -119,7 +119,8 @@ export function buildLeaderboard(
 }
 
 /**
- * Build leaderboard from Firestore when db available, else fallback to sync buildLeaderboard.
+ * Build leaderboard from Firestore only — no AI/mock opponents.
+ * Returns all-time scores (all completions) + current player.
  */
 export async function buildLeaderboardAsync(
   seed: number,
@@ -128,8 +129,7 @@ export async function buildLeaderboardAsync(
   playerValue: number,
   playerReturnPct: number,
 ): Promise<LeaderboardEntry[]> {
-  const firestoreScores = await getLeaderboardAdvanced(seed);
-  const ai = generateAIOpponents(seed, totalInvested);
+  const firestoreScores = await getLeaderboardAdvanced();
 
   const playerEntry: LeaderboardEntry = {
     name: playerName,
@@ -138,12 +138,12 @@ export async function buildLeaderboardAsync(
     isYou: true,
   };
 
-  const historicalFromFirestore = firestoreScores
+  const others = firestoreScores
     .filter(s => s.name !== playerName)
     .map(s => ({ name: s.name, value: s.value, returnPct: s.returnPct }));
 
-  const all = [...ai, ...historicalFromFirestore, playerEntry]
+  const all = [...others, playerEntry]
     .sort((a, b) => b.value - a.value)
-    .slice(0, 12);
+    .slice(0, 100);
   return all;
 }

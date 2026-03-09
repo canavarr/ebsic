@@ -1,14 +1,12 @@
 /**
  * Firestore adapter for Advanced mode leaderboard.
  * Collection: leaderboard_advanced
- * Doc ID: {seed}_{slug}
+ * Doc ID: {seed}_{slug} (allows same team multiple runs)
  * Fields: seed, teamName, slug, finalValue, returnPct, timestamp
  *
- * Create composite index in Firebase Console when first query runs:
- * Collection: leaderboard_advanced
- * Fields: seed (Ascending), finalValue (Descending)
+ * Single-field index on finalValue (Descending) - usually auto-created by Firestore.
  */
-import { doc, setDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, setDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import type { LeaderboardEntry } from './leaderboard';
 
@@ -37,7 +35,7 @@ export async function saveScoreAdvanced(
   if (!db) return;
   try {
     const slug = toSlug(teamName);
-    const docId = `${seed}_${slug}`;
+    const docId = `${seed}_${Date.now()}_${slug}`;
     await setDoc(doc(db, COLLECTION, docId), {
       seed,
       teamName,
@@ -52,18 +50,17 @@ export async function saveScoreAdvanced(
 }
 
 /**
- * Fetch leaderboard entries for a given seed from Firestore.
+ * Fetch all leaderboard entries from Firestore, sorted by finalValue descending.
  * Returns empty array if db unavailable or query fails.
  */
-export async function getLeaderboardAdvanced(seed: number): Promise<LeaderboardEntry[]> {
+export async function getLeaderboardAdvanced(): Promise<LeaderboardEntry[]> {
   if (!db) return [];
   try {
     const col = collection(db, COLLECTION);
     const q = query(
       col,
-      where('seed', '==', seed),
       orderBy('finalValue', 'desc'),
-      limit(50)
+      limit(100)
     );
     const snap = await getDocs(q);
     return snap.docs.map(d => {

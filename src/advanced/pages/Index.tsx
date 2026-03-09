@@ -176,7 +176,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     }
   }, [game.pendingHoldings, game.pendingCash, runSimulation]);
 
-  const handleContinueFromEvents = useCallback(() => {
+  const handleContinueFromEvents = useCallback(async () => {
     const lastYear = game.yearHistory[game.yearHistory.length - 1];
     if (!lastYear) return;
 
@@ -185,7 +185,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
       const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
       const finalValue = game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance;
       const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
-      saveScore(seedRef.current, game.teamName, finalValue, returnPct);
+      await saveScore(seedRef.current, game.teamName, finalValue, returnPct);
       setGame(prev => ({ ...prev, phase: 'final', benchmarkData: benchmark }));
       return;
     }
@@ -207,7 +207,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     }));
   }, [game.currentYear, game.cashBalance, game.holdings, game.yearHistory, game.teamName]);
 
-  const handleEndGame = useCallback((holdings: PortfolioHolding[], unusedCash: number) => {
+  const handleEndGame = useCallback(async (holdings: PortfolioHolding[], unusedCash: number) => {
     const rng = rngRef.current!;
     let currentHoldings = holdings.map(h => ({ ...h }));
     let currentCash = unusedCash;
@@ -237,7 +237,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
     const finalValue = currentHoldings.reduce((s, h) => s + h.valueAtStart, 0) + currentCash;
     const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
-    saveScore(seedRef.current, game.teamName, finalValue, returnPct);
+    await saveScore(seedRef.current, game.teamName, finalValue, returnPct);
 
     setGame(prev => ({
       ...prev,

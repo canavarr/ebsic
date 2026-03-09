@@ -33,7 +33,7 @@ Or in Firebase Console → Firestore → Rules, paste the contents of `firestore
 
 **Classic leaderboard:** Single-field index on `finalValue` is usually created automatically.
 
-**Advanced leaderboard:** The `leaderboard_advanced` collection needs a composite index on `seed` (Ascending) + `finalValue` (Descending). Deploy indexes:
+**Advanced leaderboard:** The `leaderboard_advanced` collection uses a single-field query on `finalValue` (descending). Firestore auto-creates single-field indexes. Deploy indexes (if needed):
 
 ```bash
 firebase deploy --only firestore:indexes

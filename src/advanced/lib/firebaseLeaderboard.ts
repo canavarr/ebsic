@@ -45,7 +45,7 @@ export async function saveScoreAdvanced(
       timestamp: Date.now(),
     });
   } catch (e) {
-    console.warn('saveScoreAdvanced failed:', e);
+    console.error('[Advanced leaderboard] saveScoreAdvanced failed:', e);
   }
 }
 
@@ -72,7 +72,7 @@ export async function getLeaderboardAdvanced(): Promise<LeaderboardEntry[]> {
       };
     });
   } catch (e) {
-    console.warn('getLeaderboardAdvanced failed:', e);
+    console.error('[Advanced leaderboard] getLeaderboardAdvanced failed:', e);
     return [];
   }
 }

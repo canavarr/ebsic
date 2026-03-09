@@ -87,13 +87,17 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
     ? ((finalPortfolioValue - benchmarkData.finalValue) / benchmarkData.finalValue * 100).toFixed(1)
     : null;
 
-  // Leaderboard: show player immediately, then fetch real Firestore data
+  // Leaderboard: show player immediately, then fetch real Firestore data only (no AI/fallback)
   const yourReturnPct = ((finalPortfolioValue - totalInvested) / totalInvested) * 100;
-  const [leaderboard, setLeaderboard] = useState<{ name: string; value: number; returnPct: number; isYou?: boolean }[]>(() => [
-    { name: teamName, value: finalPortfolioValue, returnPct: yourReturnPct, isYou: true },
-  ]);
+  const playerEntry = { name: teamName, value: finalPortfolioValue, returnPct: yourReturnPct, isYou: true };
+  const [leaderboard, setLeaderboard] = useState<{ name: string; value: number; returnPct: number; isYou?: boolean }[]>(() => [playerEntry]);
   useEffect(() => {
-    buildLeaderboardAsync(weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct).then(setLeaderboard);
+    buildLeaderboardAsync(weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct)
+      .then(setLeaderboard)
+      .catch((err) => {
+        console.warn('Leaderboard fetch failed, showing only your score:', err);
+        setLeaderboard([playerEntry]);
+      });
   }, [weeklySeed, totalInvested, teamName, finalPortfolioValue, yourReturnPct]);
 
   return (

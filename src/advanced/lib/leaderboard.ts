@@ -59,17 +59,19 @@ interface StoredScore {
 
 /**
  * Save a player's score. Uses Firestore when db is available, else localStorage.
+ * Returns a Promise that resolves when Firestore write finishes (so caller can await before showing results).
  */
-export function saveScore(seed: number, name: string, value: number, returnPct: number): void {
-  if (db) {
-    saveScoreAdvanced(seed, name, value, returnPct).catch(() => {});
-  }
+export function saveScore(seed: number, name: string, value: number, returnPct: number): Promise<void> {
   try {
     const existing = loadScores();
     existing.push({ seed, name, value, returnPct, timestamp: Date.now() });
     const trimmed = existing.slice(-50);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   } catch { /* localStorage unavailable */ }
+  if (db) {
+    return saveScoreAdvanced(seed, name, value, returnPct);
+  }
+  return Promise.resolve();
 }
 
 /**

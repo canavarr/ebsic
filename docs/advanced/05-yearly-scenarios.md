@@ -30,3 +30,5 @@ YearScenario:
 | 2033 | Strateegiline tehnoloogiaregulatsioon |
 | 2034 | Globaalne infrastruktuuri supertsükkel |
 | 2035 | Tehnoloogiline tootlikkuse ajastu |
+
+**STRATEGOS:** 2028 is a fixed anchor — "Finantsstress ja varamullide korrigeerimine" (crisis). Survivorship gate for Ellujääja achievement. Pre-position: no sector >65%, CRYPTO <50%, COMMODITY hedge.

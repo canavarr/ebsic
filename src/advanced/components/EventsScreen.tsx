@@ -90,21 +90,41 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           </motion.div>
         )}
 
-        {/* Applied Decision */}
+        {/* Applied Decision with sector attribution */}
         {yearResult.appliedDecision && yearResult.appliedDecision.label && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
             style={{
-              background: C.navy, borderRadius: 10, padding: '12px 20px', marginBottom: 20,
-              display: 'flex', alignItems: 'center', gap: 10,
+              background: C.navy, borderRadius: 10, padding: '14px 20px', marginBottom: 20,
             }}
           >
-            <span style={{ fontSize: 14 }}>◆</span>
-            <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.tan }}>
-              {t.advYourDecision}: {yearResult.appliedDecision.label}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 14 }}>◆</span>
+              <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.tan }}>
+                {t.advYourDecision}: {yearResult.appliedDecision.label}
+              </span>
+            </div>
+            {Object.keys(yearResult.appliedDecision.modifiers).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {Object.entries(yearResult.appliedDecision.modifiers)
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .map(([sector, mod]) => {
+                    const m = mod as number;
+                    const isPos = m > 0;
+                    return (
+                      <span key={sector} style={{
+                        ...F, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
+                        background: isPos ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.25)',
+                        color: isPos ? '#7dd87d' : '#f08080',
+                      }}>
+                        {sector} {isPos ? '+' : ''}{(m * 100).toFixed(0)}%
+                      </span>
+                    );
+                  })}
+              </div>
+            )}
           </motion.div>
         )}
 

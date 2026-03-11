@@ -15,30 +15,33 @@ export function checkAchievements(
 ): Achievement[] {
   const achievements: Achievement[] = [];
 
-  // 1. Ellujääja — survived crisis year (2028) with positive return
-  const crisisYear = years.find(y => y.year === 2028);
+  // 1. Ellujääja — survived the crisis year with positive return
+  // Crisis year is seeded (2027, 2028 or 2029) — find it from macroState
+  const crisisYearResult = years.find(y => y.macroState === 'CRISIS');
   achievements.push({
     id: 'survivor',
     title: 'Ellujääja',
-    description: 'Elasid üle 2028. aasta kriisi positiivse tootlusega',
+    description: 'Elasid üle kriisiaasta positiivse tootlusega',
     icon: '▽',
-    earned: !!crisisYear && crisisYear.totalPortfolioReturn >= 0,
+    earned: !!crisisYearResult && crisisYearResult.totalPortfolioReturn >= 0,
   });
 
-  // 2. Hajutaja — invested in all 4 sectors in any year
+  // 2. Hajutaja — all 4 sectors each with ≥5% weight in at least one year
+  const SECTOR_MIN_WEIGHT = 0.05;
   const allSectorsInYear = years.some(yr => {
-    const sectors = new Set(Object.keys(yr.sectorSummary) as Sector[]);
-    return sectors.size >= 4;
+    const weights = yr.sectorWeights ?? {};
+    const activeSectors = Object.values(weights).filter(w => (w ?? 0) >= SECTOR_MIN_WEIGHT).length;
+    return activeSectors >= 4;
   });
   achievements.push({
     id: 'diversifier',
     title: 'Hajutaja',
-    description: 'Investeerisid kõigisse 4 sektorisse ühel aastal',
+    description: 'Investeerisid vähemalt 5% kõigisse 4 sektorisse ühel aastal',
     icon: '◈',
     earned: allSectorsInYear,
   });
 
-  // 3. Teemantkäed — never had a negative return year, AND had investments (not 100% cash)
+  // 3. Teemantkäed — never had a negative return year, AND had investments every year
   const hadInvestmentsEveryYear = years.every(y => y.assetReturns.length > 0);
   const allPositive = years.every(y => y.totalPortfolioReturn >= 0);
   achievements.push({
@@ -59,11 +62,11 @@ export function checkAchievements(
     earned: totalDividends > 500,
   });
 
-  // 5. Kümnekordistaja — portfolio doubled
+  // 5. Kahekordistaja — portfolio value at least 2× total invested
   achievements.push({
     id: 'doubler',
-    title: 'Kümnekordistaja',
-    description: 'Portfelli väärtus kahekordistus',
+    title: 'Kahekordistaja',
+    description: 'Portfelli lõppväärtus kahekordistas kogupanuse',
     icon: '▲',
     earned: finalPortfolioValue >= totalInvested * 2,
   });
@@ -82,11 +85,11 @@ export function checkAchievements(
     earned: maxStreak >= 5,
   });
 
-  // 7. Riskijuht — never had >50% in one sector
+  // 7. Riskijuht — no single sector ever exceeded 50% portfolio weight
+  // Uses sectorWeights (actual allocation fractions), not sectorSummary (return averages)
   const neverConcentrated = years.every(yr => {
-    const totalVal = yr.totalPortfolioValue;
-    if (totalVal <= 0) return true;
-    return Object.values(yr.sectorSummary).every(v => Math.abs(v) <= 0.5);
+    const weights = yr.sectorWeights ?? {};
+    return Object.values(weights).every(w => (w ?? 0) <= 0.5);
   });
   achievements.push({
     id: 'risk-manager',
@@ -96,13 +99,14 @@ export function checkAchievements(
     earned: neverConcentrated,
   });
 
-  // 8. Täisportfell — high portfolio utilization
+  // 8. Täisportfell — held at least 3 different investments in every year played
+  const alwaysActive = years.every(y => y.assetReturns.length >= 3);
   achievements.push({
     id: 'full-portfolio',
     title: 'Täisportfell',
-    description: 'Kasutasid üle 90% eelarvest igal aastal',
+    description: 'Hoidid igal aastal vähemalt 3 erinevat investeeringut',
     icon: '■',
-    earned: finalPortfolioValue >= totalInvested * 0.9,
+    earned: alwaysActive,
   });
 
   return achievements;

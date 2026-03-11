@@ -40,3 +40,5 @@ SimulateYearOutput:
 - Single sector >70% in CRISIS: -10%
 - CRYPTO >50% in CRISIS/RECESSION: -15%
 - One sector only in RECESSION/CRISIS: -8%
+
+**STRATEGOS:** Liquidation + concentration penalties create asymmetric downside. One catastrophic year can erase three good years. Survival (avoiding the cascade) is a core strategic objective.

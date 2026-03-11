@@ -29,3 +29,5 @@ AssetDefinition:
 | COMMODITY | 5 | Copper (HG), Lithium, Uranium, Nickel, Wheat (ZW) |
 
 *Full catalog: 39 assets. See `src/advanced/simulation/assets.ts`.*
+
+**STRATEGOS:** Sector matters more than ticker — macro and events apply at sector level. CRYPTO: high upside (1.15× in GOOD_GROWTH) but -15% penalty if >50% in CRISIS/RECESSION. COMMODITY: crisis hedge (1.05× in CRISIS when others collapse).

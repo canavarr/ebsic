@@ -79,6 +79,7 @@ export interface YearResult {
   events: TriggeredEvent[];
   assetReturns: AssetYearReturn[];
   sectorSummary: Record<Sector, number>;
+  sectorWeights: Partial<Record<Sector, number>>;
   diversificationPenalty: number;
   totalPortfolioReturn: number;
   totalPortfolioValue: number;
@@ -88,7 +89,6 @@ export interface YearResult {
   scenarioKeyForces?: string[];
   scenarioHeadlines?: NewsHeadline[];
   inflationRate?: number;
-  // New fields for enhanced gameplay
   liquidationEvents?: LiquidationEvent[];
   appliedDecision?: { label: string; modifiers: Partial<Record<Sector, number>> };
 }

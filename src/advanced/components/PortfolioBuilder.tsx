@@ -153,15 +153,20 @@ function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoV
     { name: 'Varad', value: rawVal, color: C.slate3 },
   ];
 
+  const cashAmt = Math.max(0, cash);
+  const inflLow = Math.round(cashAmt * 0.015);
+  const inflHigh = Math.round(cashAmt * 0.09);
+  const hasCash = cashAmt > 0;
+
   const rows = [
-    { l: 'Aasta', v: String(currentYear) },
-    { l: 'Koguväärtus', v: totalVal > 0 ? formatCurrency(totalVal + cash) : formatCurrency(cash) },
-    { l: 'Investeeritud', v: formatCurrency(totalVal) },
-    { l: 'Vaba raha', v: formatCurrency(Math.max(0, cash)) },
-    { l: 'ETFs', v: formatCurrency(etfVal) },
-    { l: 'Aktsiad', v: formatCurrency(stocksVal) },
-    { l: 'Krüpto', v: formatCurrency(cryptoVal) },
-    { l: 'Varad', v: formatCurrency(rawVal) },
+    { l: 'Aasta', v: String(currentYear), warn: false },
+    { l: 'Koguväärtus', v: totalVal > 0 ? formatCurrency(totalVal + cash) : formatCurrency(cash), warn: false },
+    { l: 'Investeeritud', v: formatCurrency(totalVal), warn: false },
+    { l: 'Vaba raha', v: formatCurrency(cashAmt), warn: hasCash },
+    { l: 'ETFs', v: formatCurrency(etfVal), warn: false },
+    { l: 'Aktsiad', v: formatCurrency(stocksVal), warn: false },
+    { l: 'Krüpto', v: formatCurrency(cryptoVal), warn: false },
+    { l: 'Varad', v: formatCurrency(rawVal), warn: false },
   ];
 
   return (
@@ -180,10 +185,15 @@ function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoV
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px 0', maxWidth: 500 }}>
-            {rows.slice(0, 4).map(({ l, v }) => (
+            {rows.slice(0, 4).map(({ l, v, warn }) => (
               <div key={l}>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.blue, marginBottom: 2 }}>{l}</div>
-                <div style={{ ...F, fontSize: 14, fontWeight: 600, color: C.slate2 }}>{v}</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: warn ? C.tan2 : C.blue, marginBottom: 2 }}>{l}</div>
+                <div style={{ ...F, fontSize: 14, fontWeight: 600, color: warn ? C.tan2 : C.slate2 }}>{v}</div>
+                {warn && hasCash && (
+                  <div style={{ ...F, fontSize: 10, color: C.tan, marginTop: 2 }}>
+                    −{formatCurrency(inflLow)}–{formatCurrency(inflHigh)}/a
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -394,10 +404,27 @@ export default function PortfolioBuilder({
     onTradeUsed();
   }, [totalBudget, canTrade, portfolio, onTradeUsed]);
 
+  const computeTradeVolume = useCallback((): number => {
+    const prevMap = new Map((initialHoldings ?? []).map(h => [h.assetId, h.investedAmount]));
+    let vol = 0;
+    for (const p of portfolio) {
+      const prev = prevMap.get(p.assetId) ?? 0;
+      vol += Math.abs(p.investedAmount - prev);
+    }
+    // Include positions that were fully closed (present in prev, absent or zero in current)
+    for (const [assetId, prevAmount] of prevMap) {
+      const current = portfolio.find(p => p.assetId === assetId);
+      if (!current || current.investedAmount === 0) {
+        vol += prevAmount;
+      }
+    }
+    return vol;
+  }, [portfolio, initialHoldings]);
+
   const buildHoldings = (): [PortfolioHolding[], number] => {
-    // Apply transaction fees to the cash
-    const totalInvested = portfolio.reduce((s, p) => s + p.investedAmount, 0);
-    const feesPaid = totalInvested * transactionFee;
+    // Fees apply only to what actually changed — holding positions costs nothing
+    const tradeVol = computeTradeVolume();
+    const feesPaid = tradeVol * transactionFee;
     const holdings: PortfolioHolding[] = portfolio.filter(p => p.investedAmount > 0).map(p => {
       const asset = ASSET_CATALOG.find(a => a.id === p.assetId)!;
       return { assetId: p.assetId, shares: Math.round(p.investedAmount / asset.pricePerUnit), valueAtStart: p.investedAmount };
@@ -430,6 +457,43 @@ export default function PortfolioBuilder({
     return { etf, stocks, crypto, raw };
   }, [portfolio]);
 
+  // Sector concentration warnings — computed from invested amounts only (excludes cash)
+  const concentrationWarnings = useMemo(() => {
+    const totalInvested = portfolio.reduce((s, p) => s + p.investedAmount, 0);
+    if (totalInvested === 0) return [];
+
+    const sectorTotals: Partial<Record<Sector, number>> = {};
+    for (const p of portfolio) {
+      const asset = ASSET_CATALOG.find(a => a.id === p.assetId);
+      if (!asset) continue;
+      sectorTotals[asset.sector] = (sectorTotals[asset.sector] ?? 0) + p.investedAmount;
+    }
+
+    const sectorLabels: Record<Sector, string> = {
+      ETF: 'ETFid',
+      STOCK: 'Aktsiad',
+      CRYPTO: 'Krüptoraha',
+      COMMODITY: 'Toorained',
+    };
+
+    const warnings: { sector: string; weight: number; level: 'warn' | 'danger' | 'critical'; tip: string }[] = [];
+    for (const [sector, val] of Object.entries(sectorTotals)) {
+      const weight = (val as number) / totalInvested;
+      const label = sectorLabels[sector as Sector] ?? sector;
+      if (sector === 'CRYPTO' && weight >= 0.45) {
+        const level = weight >= 0.50 ? 'danger' : 'warn';
+        warnings.push({ sector: label, weight, level, tip: 'Krüpto >50% toob penalti kriisis ja languses' });
+      } else if (weight >= 0.80) {
+        warnings.push({ sector: label, weight, level: 'critical', tip: 'Alati aktiivne penalti kõigis majandusolukordades' });
+      } else if (weight >= 0.70) {
+        warnings.push({ sector: label, weight, level: 'danger', tip: 'Kriisi ajal lisapenalti' });
+      } else if (weight >= 0.65) {
+        warnings.push({ sector: label, weight, level: 'warn', tip: 'Läheneb kriisi penaltipiirangule (70%)' });
+      }
+    }
+    return warnings;
+  }, [portfolio]);
+
   // Group assets
   const grouped = useMemo(() => {
     const etfs = ASSET_CATALOG.filter(a => a.sector === 'ETF');
@@ -447,7 +511,7 @@ export default function PortfolioBuilder({
   const nextYear = currentYear + 1;
   const isFirstYear = currentYear === 2026;
   const totalInvested = portfolio.reduce((s, p) => s + p.investedAmount, 0);
-  const feeAmount = totalInvested * transactionFee;
+  const feeAmount = computeTradeVolume() * transactionFee;
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.white }}>
@@ -502,6 +566,40 @@ export default function PortfolioBuilder({
             background: C.cream, border: `1px solid ${C.creamy}`, borderRadius: 8, padding: '8px 14px',
           }}>
             {t.advFeeNotice}: {formatCurrency(feeAmount)}
+          </div>
+        </div>
+      )}
+
+      {/* Inflation notice for undeployed cash */}
+      {availableCash > 0 && (
+        <div style={{ maxWidth: 1200, margin: '8px auto 0', padding: '0 40px' }}>
+          <div style={{
+            ...F, fontSize: 12, fontWeight: 600, color: C.slate,
+            background: C.cream, border: `1px solid ${C.creamy}`, borderRadius: 8, padding: '8px 14px',
+          }}>
+            {t.advInflationNotice}: {formatCurrency(availableCash)} — {t.advInflationRange}
+            {' '}(−{formatCurrency(Math.round(availableCash * 0.015))}–{formatCurrency(Math.round(availableCash * 0.09))})
+          </div>
+        </div>
+      )}
+
+      {/* Concentration penalty warnings */}
+      {concentrationWarnings.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: '8px auto 0', padding: '0 40px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {concentrationWarnings.map(w => (
+              <div key={w.sector} style={{
+                ...F, fontSize: 12, fontWeight: 600, color: C.navy,
+                background: C.cream, border: `1px solid ${C.tan}`,
+                borderRadius: 8, padding: '8px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <span>
+                  {w.sector}: <strong>{Math.round(w.weight * 100)}%</strong> investeeritud summast
+                </span>
+                <span style={{ color: C.tan, fontWeight: 700 }}>{w.tip}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}

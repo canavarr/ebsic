@@ -19,3 +19,5 @@ Source: `src/advanced/` codebase.
 | 10 | [10-scoring.md](./10-scoring.md) | Scoring & ranks |
 | 11 | [11-portfolio-builder-bridge.md](./11-portfolio-builder-bridge.md) | Portfolio → simulation bridge |
 | 12 | [12-edge-cases.md](./12-edge-cases.md) | Known edge cases & inconsistencies |
+| 13 | [13-STRATEGOS-ANALYSIS.md](./13-STRATEGOS-ANALYSIS.md) | **STRATEGOS** — leverage points, feedback loops, tactical playbook |
+| — | [ADVANCED_GAMEPLAY_FULL.md](./ADVANCED_GAMEPLAY_FULL.md) | Compiled full documentation with strategic overlay |

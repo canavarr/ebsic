@@ -150,10 +150,10 @@ function computeDiversificationPenalty(
   holdings: PortfolioHolding[],
   assets: AssetDefinition[],
   macro: MacroState,
-): number {
+): { penalty: number; sectorWeights: Partial<Record<Sector, number>> } {
   const assetMap = new Map(assets.map((a) => [a.id, a]));
   const totalValue = holdings.reduce((s, h) => s + h.valueAtStart, 0);
-  if (totalValue === 0) return 0;
+  if (totalValue === 0) return { penalty: 0, sectorWeights: {} };
 
   const sectorWeights: Partial<Record<Sector, number>> = {};
   for (const h of holdings) {
@@ -178,7 +178,7 @@ function computeDiversificationPenalty(
     }
   }
 
-  return penalty;
+  return { penalty, sectorWeights };
 }
 
 // ─── Forced Liquidation ───────────────────────────────────────
@@ -316,8 +316,8 @@ export function simulateYear(input: SimulateYearInput): SimulateYearOutput {
     ));
   }
 
-  // 6. Diversification penalty
-  const divPenalty = computeDiversificationPenalty(updatedHoldings, assets, macroState);
+  // 6. Diversification penalty + sector weights
+  const { penalty: divPenalty, sectorWeights } = computeDiversificationPenalty(updatedHoldings, assets, macroState);
 
   // 7. Apply returns
   const previousTotal = updatedHoldings.reduce((s, h) => s + h.valueAtStart, 0);
@@ -357,6 +357,7 @@ export function simulateYear(input: SimulateYearInput): SimulateYearOutput {
     events,
     assetReturns,
     sectorSummary,
+    sectorWeights,
     diversificationPenalty: divPenalty,
     totalPortfolioReturn: totalReturn,
     totalPortfolioValue: totalPortfolioValue + updatedCash,

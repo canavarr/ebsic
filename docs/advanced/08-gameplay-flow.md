@@ -53,3 +53,5 @@ pendingHoldings, pendingCash
 - **RNG** — single `rngRef` for all player simulation; order of calls must match (year-by-year then End Game)
 - **Timeline** — shared `timelineRef`; benchmark uses same timeline, different RNG (seed+7777)
 - **State** — `holdings`, `cashBalance`, `yearHistory` must stay in sync with how simulation was run
+
+**STRATEGOS:** 10 annual OODA cycles. Mid-year news = information before commitment (rebalance or hold). End Game = fast-forward when tactical edge is exhausted; use when allocation is "good enough" and you want to lock in.

@@ -23,3 +23,5 @@ Each event has: `id`, `name`, `description`, `sectorModifiers`, `probability` (p
 | RATE_CUTS | STOCK +3%, CRYPTO +4%, ETF +2% | RECESSION, CRISIS |
 
 **Selection:** 2–3 events per year, weighted by `probability[macro]`. Fallback ensures at least 2.
+
+**STRATEGOS:** Events cluster by macro — CRISIS years see CRYPTO_CRASH, ENERGY_CRISIS, WAR_ESCALATION. Sector modifiers stack. A CRYPTO-heavy portfolio in CRISIS + CRYPTO_CRASH (-10%) + concentration penalty (-15%) = compound punishment. Hedge with COMMODITY.

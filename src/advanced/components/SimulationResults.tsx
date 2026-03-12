@@ -12,6 +12,7 @@ import { C, F, formatCurrency } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
 import { T } from '../../contexts/translations';
 import { getAssetDisplay } from '@/lib/assetDisplay';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface SimulationResultsProps {
   result: SimulationOutput;
@@ -32,6 +33,7 @@ const DEFAULT_END_YEAR = 2035;
 export default function SimulationResults({ result, initialInvestment, yearlyAddition = DEFAULT_YEARLY_ADDITION, startYear = DEFAULT_START_YEAR, endYear = DEFAULT_END_YEAR, onReset, benchmarkData, teamName, weeklySeed }: SimulationResultsProps) {
   const { lang } = useLang();
   const t = T[lang];
+  const mobile = useIsMobile();
   const { years, finalPortfolioValue, finalCashBalance } = result;
   const assetMap = new Map(ASSET_CATALOG.map(a => [a.id, a]));
 
@@ -79,7 +81,7 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
     { label: t.advScoreConsistency, value: score.consistencyScore, max: 30, color: C.cream },
   ];
 
-  const inner = { maxWidth: 800, margin: '0 auto', padding: '40px 24px' } as const;
+  const inner = { maxWidth: 800, margin: '0 auto', padding: mobile ? '24px 16px' : '40px 24px' } as const;
 
   // Benchmark comparison
   const beatBenchmark = benchmarkData ? finalPortfolioValue > benchmarkData.finalValue : false;
@@ -108,7 +110,7 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
         <div style={{ ...inner, textAlign: 'center' as const }}>
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>{t.advSimulationEnded}</div>
-            <h1 style={{ ...F, fontSize: 48, fontWeight: 800, color: C.navy, margin: '0 0 8px', letterSpacing: '-0.03em' }}>
+            <h1 style={{ ...F, fontSize: mobile ? 32 : 48, fontWeight: 800, color: C.navy, margin: '0 0 8px', letterSpacing: '-0.03em' }}>
               {t.advResults}
             </h1>
             <div style={{ ...F, fontSize: 16, color: C.slate }}>
@@ -130,7 +132,7 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
             <div style={{ ...F, fontSize: 13, fontWeight: 600, color: C.gray, marginBottom: 4, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
               {t.advYourScore}
             </div>
-            <div style={{ ...F, fontSize: 64, fontWeight: 800, color: C.white, lineHeight: 1, marginBottom: 4 }}>
+            <div style={{ ...F, fontSize: mobile ? 48 : 64, fontWeight: 800, color: C.white, lineHeight: 1, marginBottom: 4 }}>
               {score.totalScore}
             </div>
             <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.tan, marginBottom: 20 }}>
@@ -144,9 +146,9 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
                 {t.advVsBenchmark}: {beatBenchmark ? '+' : ''}{benchmarkDiff}%
               </div>
             )}
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', gap: mobile ? 12 : 16, justifyContent: 'center' }}>
               {scoreBarItems.map(item => (
-                <div key={item.label} style={{ flex: 1, maxWidth: 200 }}>
+                <div key={item.label} style={{ flex: 1, maxWidth: mobile ? '100%' : 200 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ ...F, fontSize: 11, color: C.gray }}>{item.label}</span>
                     <span style={{ ...F, fontSize: 11, color: C.gray }}>{item.value}/{item.max}</span>
@@ -172,7 +174,7 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
               <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: 0 }}>{t.advAchievements}</h2>
               <span style={{ ...F, fontSize: 13, fontWeight: 600, color: C.gray }}>{earnedCount}/{achievements.length}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10 }}>
               {achievements.map(a => (
                 <div key={a.id} style={{
                   padding: '14px 10px', borderRadius: 10, textAlign: 'center',
@@ -201,10 +203,10 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
       <div style={{ background: C.white }}>
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' as const }}>
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(140px, 1fr))', gap: mobile ? 16 : 24, textAlign: 'center' as const }}>
               <div>
-                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advInvested}</div>
-                <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(totalInvested)}</div>
+                <div style={{ ...F, fontSize: mobile ? 11 : 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advInvested}</div>
+                <div style={{ ...F, fontSize: mobile ? 17 : 20, fontWeight: 700, color: C.slate }}>{formatCurrency(totalInvested)}</div>
               </div>
               <div>
                 <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advFinalValue}</div>
@@ -277,12 +279,12 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
                 <div key={asset.id} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '14px 0',
-                  borderBottom: i < holdingSummary.length - 1 ? `1px solid ${C.bg}` : 'none',
+                  borderBottom: i < holdingSummary.length - 1 ? `1px solid ${C.creamy}` : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: 20,
-                      background: C.cream, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: C.creamy, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       <span style={{ ...F, fontSize: 11, fontWeight: 800, color: C.navy }}>{asset.ticker.slice(0, 3)}</span>
                     </div>
@@ -314,14 +316,15 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
               const pos = yr.totalPortfolioReturn >= 0;
               return (
                 <div key={yr.year} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 0',
-                  borderBottom: i < years.length - 1 ? `1px solid ${C.white}` : 'none',
+                  display: 'flex', flexDirection: mobile ? 'column' : 'row',
+                  alignItems: mobile ? 'stretch' : 'center', justifyContent: 'space-between',
+                  padding: mobile ? '10px 0' : '12px 0', gap: mobile ? 4 : 0,
+                  borderBottom: i < years.length - 1 ? `1px solid ${C.creamy}` : 'none',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ ...F, fontSize: 14, fontWeight: 700, color: C.navy }}>{yr.year}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 8 : 12, flexWrap: 'wrap' }}>
+                    <span style={{ ...F, fontSize: mobile ? 13 : 14, fontWeight: 700, color: C.navy }}>{yr.year}</span>
                     {yr.scenarioTitle && (
-                      <span style={{ ...F, fontSize: 12, color: C.gray }}>{yr.scenarioTitle}</span>
+                      <span style={{ ...F, fontSize: mobile ? 11 : 12, color: C.gray }}>{yr.scenarioTitle}</span>
                     )}
                     {yr.liquidationEvents && yr.liquidationEvents.length > 0 && (
                       <span style={{ ...F, fontSize: 10, fontWeight: 700, color: C.navy, background: C.creamy, padding: '2px 6px', borderRadius: 4 }}>
@@ -334,11 +337,11 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <span style={{ ...F, fontSize: 14, fontWeight: 700, color: pos ? C.blue : C.tan }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 12 : 16 }}>
+                    <span style={{ ...F, fontSize: mobile ? 13 : 14, fontWeight: 700, color: pos ? C.blue : C.tan }}>
                       {pos ? '+' : ''}{pct}%
                     </span>
-                    <span style={{ ...F, fontSize: 13, color: C.slate }}>{formatCurrency(yr.totalPortfolioValue)}</span>
+                    <span style={{ ...F, fontSize: mobile ? 12 : 13, color: C.slate }}>{formatCurrency(yr.totalPortfolioValue)}</span>
                   </div>
                 </div>
               );
@@ -351,34 +354,22 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
       <div style={{ background: C.cream }}>
         <div style={{ ...inner }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75, duration: 0.5 }}>
-            <h2 style={{ ...F, fontSize: 24, fontWeight: 800, color: C.navy, margin: '0 0 24px' }}>{t.advLeaderboard}</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px', width: 80 }}>{t.advRank}</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'left', padding: '0 0 16px' }}>{t.advTeam}</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'right', padding: '0 0 16px' }}>{t.advValue}</th>
-                  <th style={{ ...F, fontSize: 14, fontWeight: 700, color: C.tan, textAlign: 'right', padding: '0 0 16px', width: 140 }}>{t.advProfitPct}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((p, i) => (
-                  <tr key={i} style={{
-                    borderTop: `1px solid ${C.creamy}`,
-                    background: p.isYou ? C.creamy : 'transparent',
-                  }}>
-                    <td style={{ ...F, fontSize: 15, fontWeight: 400, color: C.slate, padding: '18px 0' }}>{i + 1}</td>
-                    <td style={{ ...F, fontSize: 15, fontWeight: p.isYou ? 700 : 500, color: C.navy, padding: '18px 0' }}>
-                      {p.name} {p.isYou && '●'}
-                    </td>
-                    <td style={{ ...F, fontSize: 15, fontWeight: 400, color: C.slate, textAlign: 'right', padding: '18px 0' }}>{formatCurrency(p.value)}</td>
-                    <td style={{ ...F, fontSize: 15, fontWeight: 600, color: p.returnPct >= 0 ? C.tan : C.slate, textAlign: 'right', padding: '18px 0' }}>
-                      {p.returnPct >= 0 ? '+ ' : ''}{p.returnPct.toFixed(2)}%
-                    </td>
-                  </tr>
+            <h2 style={{ ...F, fontSize: mobile ? 18 : 22, fontWeight: 800, color: '#1F3C8E', margin: '0 0 20px' }}>{t.advLeaderboard}</h2>
+            <div style={{ overflowX: mobile ? 'auto' : undefined }}>
+              <div style={{ display: 'grid', gridTemplateColumns: mobile ? '40px 1fr 100px 70px' : '80px 1fr 200px 140px', minWidth: mobile ? 320 : 'auto', padding: '0 0 12px', borderBottom: '1px solid #E0D8CC' }}>
+                {[t.advRank, t.advTeam, t.advValue, t.advProfitPct].map(h => (
+                  <span key={h} style={{ ...F, fontSize: mobile ? 12 : 13, fontWeight: 700, color: '#1F3C8E' }}>{h}</span>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              {leaderboard.map((p, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: mobile ? '40px 1fr 100px 70px' : '80px 1fr 200px 140px', minWidth: mobile ? 320 : 'auto', padding: '18px 0', borderBottom: '1px solid #E0D8CC' }}>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, color: C.slate }}>{i + 1}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: p.isYou ? 700 : 400, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}{p.isYou ? ` (${t.lbYou})` : ''}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: p.isYou ? 700 : 400, color: C.navy }}>{formatCurrency(p.value)}</span>
+                  <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 700, color: p.returnPct >= 0 ? C.tan2 : C.slate }}>{p.returnPct >= 0 ? '+ ' : '-'}{Math.abs(p.returnPct).toFixed(2)}%</span>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
@@ -390,8 +381,8 @@ export default function SimulationResults({ result, initialInvestment, yearlyAdd
             <button
               onClick={onReset}
               style={{
-                ...F, padding: '15px 56px', background: C.tan, border: 'none', borderRadius: 12,
-                fontSize: 16, fontWeight: 700, color: C.navy, cursor: 'pointer',
+                ...F, padding: '15px 56px', background: C.creamy, border: 'none', borderRadius: 12,
+                fontSize: 16, fontWeight: 700, color: C.buttonBlue, cursor: 'pointer',
               }}
             >
               {t.advStartOver}

@@ -1,13 +1,10 @@
-import { getSharedAssetDisplay } from '../../data/sharedAssetMetadata';
 import type { AssetDefinition } from '@/simulation/types';
 
 /**
- * Returns display name and description for an asset, preferring shared metadata
- * from Classic mode when the ticker matches (for consistency across modes).
+ * Returns display name and description for an asset directly from the catalog.
+ * Advanced mode assets have their own names (including fractional info).
  */
-export function getAssetDisplay(asset: AssetDefinition, lang: 'et' | 'en'): { name: string; description: string } {
-  const shared = getSharedAssetDisplay(asset.ticker, lang);
-  if (shared) return shared;
+export function getAssetDisplay(asset: AssetDefinition, _lang: 'et' | 'en'): { name: string; description: string } {
   return {
     name: asset.name,
     description: asset.description || `${asset.name} — ${asset.sector} sector asset.`,

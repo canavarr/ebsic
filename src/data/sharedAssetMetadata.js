@@ -60,11 +60,47 @@ export const SHARED_ASSET_META = {
     iconFile: 'BTC',
     categoryKey: 'categoryKrüpto',
   },
+  // Advanced-only crypto
+  ETH: { categoryKey: 'categoryKrüpto' },
+  SOL: { categoryKey: 'categoryKrüpto' },
+  LINK: { categoryKey: 'categoryKrüpto' },
+  AVAX: { categoryKey: 'categoryKrüpto' },
+  DOT: { categoryKey: 'categoryKrüpto' },
+  // Advanced-only stocks with specific countries
+  NVDA: { categoryKey: 'categoryUSA' },
+  JPM: { categoryKey: 'categoryUSA' },
+  TSM: { categoryKey: 'categoryTaiwan' },
+  RHM: { categoryKey: 'categorySaksamaa' },
+  LMT: { categoryKey: 'categoryUSA' },
+  'SU.PA': { categoryKey: 'categoryPrantsusmaa' },
+  NEE: { categoryKey: 'categoryUSA' },
+  FCX: { categoryKey: 'categoryUSA' },
+  LLY: { categoryKey: 'categoryUSA' },
+  FANUY: { categoryKey: 'categoryJaapan' },
+  DE: { categoryKey: 'categoryUSA' },
+  NTR: { categoryKey: 'categoryKanada' },
+  // Advanced-only ETFs
+  SMH: { categoryKey: 'categoryUSA' },
+  BOTZ: { categoryKey: 'categoryGlobaalne' },
+  ITA: { categoryKey: 'categoryUSA' },
+  LIT: { categoryKey: 'categoryGlobaalne' },
+  NLR: { categoryKey: 'categoryGlobaalne' },
+  ICLN: { categoryKey: 'categoryGlobaalne' },
+  BUG: { categoryKey: 'categoryGlobaalne' },
+  PHO: { categoryKey: 'categoryUSA' },
+  REMX: { categoryKey: 'categoryGlobaalne' },
+  // Advanced-only commodities
+  HG: { categoryKey: 'categoryToorained' },
+  LITH: { categoryKey: 'categoryToorained' },
+  URA: { categoryKey: 'categoryToorained' },
+  NI: { categoryKey: 'categoryToorained' },
+  ZW: { categoryKey: 'categoryToorained' },
+  XAU: { categoryKey: 'categoryToorained' },
 }
 
 export function getSharedAssetDisplay(ticker, lang) {
   const m = SHARED_ASSET_META[ticker]
-  if (!m) return null
+  if (!m || !m.nameEt) return null
   return {
     name: lang === 'en' ? m.nameEn : m.nameEt,
     description: lang === 'en' ? m.descEn : m.descEt,
@@ -72,11 +108,10 @@ export function getSharedAssetDisplay(ticker, lang) {
 }
 
 /**
- * Returns logo icon file and categoryKey for Classic-style display in Advanced.
- * Use for overlapping assets (AAPL, MSFT, AMZN, TSLA, ASML, NVO, BTC).
+ * Returns logo icon file and categoryKey for display in Advanced mode.
  */
 export function getSharedAssetVisual(ticker) {
   const m = SHARED_ASSET_META[ticker]
-  if (!m || !m.iconFile || !m.categoryKey) return null
-  return { iconFile: m.iconFile, categoryKey: m.categoryKey }
+  if (!m || !m.categoryKey) return null
+  return { iconFile: m.iconFile ?? null, categoryKey: m.categoryKey }
 }

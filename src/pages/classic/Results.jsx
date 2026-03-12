@@ -142,7 +142,7 @@ export default function Results({ name, investors, portfolio, onReset }) {
               <span style={{ ...F, fontSize: mobile ? 12 : 14, color: C.slate }}>{i + 1}</span>
               <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 400, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}{row.teamName === name ? ` (${t.lbYou})` : ''}</span>
               <span style={{ ...F, fontSize: mobile ? 12 : 14, color: C.navy }}>{formatCurrency(row.finalValue, locale)}</span>
-              <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 700, color: row.profitPercent >= 0 ? C.tan2 : '#D64045' }}>{row.profitPercent >= 0 ? '+ ' : '-'}{Math.abs(row.profitPercent).toFixed(2)}%</span>
+              <span style={{ ...F, fontSize: mobile ? 12 : 14, fontWeight: 700, color: row.profitPercent >= 0 ? C.tan2 : C.slate }}>{row.profitPercent >= 0 ? '+ ' : '-'}{Math.abs(row.profitPercent).toFixed(2)}%</span>
             </div>
           ))}
         </div>

@@ -11,7 +11,6 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   { id: 'etf-cyber', name: 'Global X Cybersecurity ETF', ticker: 'BUG', sector: 'ETF', region: 'GLOBAL', volatility: 'medium', dividendYield: 0.002, crisisSensitivity: 0.3, description: 'Cyber warfare and digital security.', pricePerUnit: 28.00 },
   { id: 'etf-water', name: 'Invesco Water Resources ETF', ticker: 'PHO', sector: 'ETF', region: 'US', volatility: 'low', dividendYield: 0.005, crisisSensitivity: 0.25, description: 'Water scarcity and infrastructure.', pricePerUnit: 62.00 },
   { id: 'etf-rare', name: 'VanEck Rare Earth and Strategic Metals ETF', ticker: 'REMX', sector: 'ETF', region: 'GLOBAL', volatility: 'high', dividendYield: 0.02, crisisSensitivity: 0.6, description: 'Strategic minerals.', pricePerUnit: 38.00 },
-  { id: 'etf-genomic', name: 'ARK Genomic Revolution ETF', ticker: 'ARKG', sector: 'ETF', region: 'US', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.8, description: 'Biotechnology and longevity.', pricePerUnit: 22.00 },
 
   // ── Stocks ──
   { id: 'stock-aapl', name: 'Apple Inc.', ticker: 'AAPL', sector: 'STOCK', region: 'US', volatility: 'medium', dividendYield: 0.005, crisisSensitivity: 0.5, pricePerUnit: 227.00 },
@@ -22,7 +21,6 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   { id: 'stock-jpm', name: 'JPMorgan Chase & Co.', ticker: 'JPM', sector: 'STOCK', region: 'US', volatility: 'medium', dividendYield: 0.022, crisisSensitivity: 0.7, pricePerUnit: 120.00 },
   { id: 'stock-asml', name: 'ASML Holding NV', ticker: 'ASML', sector: 'STOCK', region: 'EU', volatility: 'high', dividendYield: 0.006, crisisSensitivity: 0.6, pricePerUnit: 170.00 },
   { id: 'stock-tsmc', name: 'TSMC', ticker: 'TSM', sector: 'STOCK', region: 'ASIA', volatility: 'high', dividendYield: 0.015, crisisSensitivity: 0.6, pricePerUnit: 170.00 },
-  { id: 'stock-mu', name: 'Micron Technology', ticker: 'MU', sector: 'STOCK', region: 'US', volatility: 'high', dividendYield: 0.005, crisisSensitivity: 0.65, pricePerUnit: 95.00 },
   { id: 'stock-rhm', name: 'Rheinmetall AG', ticker: 'RHM', sector: 'STOCK', region: 'EU', volatility: 'high', dividendYield: 0.012, crisisSensitivity: 0.15, pricePerUnit: 180.00 },
   { id: 'stock-lmt', name: 'Lockheed Martin', ticker: 'LMT', sector: 'STOCK', region: 'US', volatility: 'low', dividendYield: 0.025, crisisSensitivity: 0.15, pricePerUnit: 112.00 },
   { id: 'stock-su', name: 'Schneider Electric', ticker: 'SU.PA', sector: 'STOCK', region: 'EU', volatility: 'medium', dividendYield: 0.015, crisisSensitivity: 0.4, pricePerUnit: 115.00 },
@@ -30,18 +28,17 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   { id: 'stock-fcx', name: 'Freeport-McMoRan', ticker: 'FCX', sector: 'STOCK', region: 'US', volatility: 'high', dividendYield: 0.007, crisisSensitivity: 0.6, pricePerUnit: 42.00 },
   { id: 'stock-nvo', name: 'Novo Nordisk A/S', ticker: 'NVO', sector: 'STOCK', region: 'EU', volatility: 'medium', dividendYield: 0.012, crisisSensitivity: 0.2, pricePerUnit: 120.00 },
   { id: 'stock-lly', name: 'Eli Lilly and Company', ticker: 'LLY', sector: 'STOCK', region: 'US', volatility: 'medium', dividendYield: 0.007, crisisSensitivity: 0.2, pricePerUnit: 195.00 },
-  { id: 'stock-abb', name: 'ABB Ltd', ticker: 'ABB', sector: 'STOCK', region: 'EU', volatility: 'medium', dividendYield: 0.018, crisisSensitivity: 0.4, pricePerUnit: 52.00 },
   { id: 'stock-fanuc', name: 'Fanuc Corporation', ticker: 'FANUY', sector: 'STOCK', region: 'ASIA', volatility: 'medium', dividendYield: 0.015, crisisSensitivity: 0.5, pricePerUnit: 28.00 },
   { id: 'stock-de', name: 'Deere & Company', ticker: 'DE', sector: 'STOCK', region: 'US', volatility: 'medium', dividendYield: 0.013, crisisSensitivity: 0.4, pricePerUnit: 200.00 },
   { id: 'stock-ntr', name: 'Nutrien Ltd', ticker: 'NTR', sector: 'STOCK', region: 'US', volatility: 'medium', dividendYield: 0.035, crisisSensitivity: 0.35, pricePerUnit: 50.00 },
 
   // ── Crypto ──
-  // Prices represent fractional ownership: 1 BTC unit = 0.001 BTC, 1 ETH unit = 0.02 ETH
   { id: 'crypto-btc', name: 'Bitcoin (per mBTC)', ticker: 'BTC', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.85, description: 'Digital store of value. 1 unit = 0.001 BTC (fractional ownership).', pricePerUnit: 95.00 },
   { id: 'crypto-eth', name: 'Ethereum (per 0.02 ETH)', ticker: 'ETH', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.9, description: 'Programmable blockchain ecosystem. 1 unit = 0.02 ETH (fractional ownership).', pricePerUnit: 64.00 },
-  { id: 'crypto-sol', name: 'Solana', ticker: 'SOL', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.95, description: 'High-speed smart contract network.', pricePerUnit: 190.00 },
-  { id: 'crypto-link', name: 'Chainlink', ticker: 'LINK', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.9, description: 'Oracle infrastructure for real-world data.', pricePerUnit: 18.00 },
-  { id: 'crypto-avax', name: 'Avalanche', ticker: 'AVAX', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.92, description: 'High-throughput smart contract platform with subnet architecture.', pricePerUnit: 40.00 },
+  { id: 'crypto-sol', name: 'Solana (per 0.1 SOL)', ticker: 'SOL', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.95, description: 'High-speed smart contract network. 1 unit = 0.1 SOL (fractional ownership).', pricePerUnit: 19.00 },
+  { id: 'crypto-link', name: 'Chainlink', ticker: 'LINK', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.9, description: 'Oracle infrastructure for real-world data. 1 unit = 1 LINK.', pricePerUnit: 18.00 },
+  { id: 'crypto-avax', name: 'Avalanche', ticker: 'AVAX', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.92, description: 'High-throughput smart contract platform. 1 unit = 1 AVAX.', pricePerUnit: 40.00 },
+  { id: 'crypto-dot', name: 'Polkadot', ticker: 'DOT', sector: 'CRYPTO', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.90, description: 'Multi-chain interoperability protocol. 1 unit = 1 DOT.', pricePerUnit: 7.00 },
 
   // ── Commodities ──
   { id: 'comm-copper', name: 'Copper', ticker: 'HG', sector: 'COMMODITY', region: 'GLOBAL', volatility: 'medium', dividendYield: 0, crisisSensitivity: 0.5, description: 'Electrification and grid expansion.', pricePerUnit: 4.50 },
@@ -49,4 +46,5 @@ export const ASSET_CATALOG: AssetDefinition[] = [
   { id: 'comm-uranium', name: 'Uranium', ticker: 'URA', sector: 'COMMODITY', region: 'GLOBAL', volatility: 'high', dividendYield: 0, crisisSensitivity: 0.45, description: 'Nuclear energy.', pricePerUnit: 85.00 },
   { id: 'comm-nickel', name: 'Nickel', ticker: 'NI', sector: 'COMMODITY', region: 'GLOBAL', volatility: 'medium', dividendYield: 0, crisisSensitivity: 0.5, description: 'EV and energy metals.', pricePerUnit: 16.00 },
   { id: 'comm-wheat', name: 'Wheat', ticker: 'ZW', sector: 'COMMODITY', region: 'GLOBAL', volatility: 'medium', dividendYield: 0, crisisSensitivity: 0.3, description: 'Food security.', pricePerUnit: 5.50 },
+  { id: 'comm-gold', name: 'Gold', ticker: 'XAU', sector: 'COMMODITY', region: 'GLOBAL', volatility: 'low', dividendYield: 0, crisisSensitivity: 0.25, description: 'Safe-haven store of value.', pricePerUnit: 60.00 },
 ];

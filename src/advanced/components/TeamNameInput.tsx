@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { C, F } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
 import { T } from '../../contexts/translations';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface TeamNameInputProps {
   onSubmit: (name: string) => void;
@@ -11,10 +12,16 @@ interface TeamNameInputProps {
 export default function TeamNameInput({ onSubmit }: TeamNameInputProps) {
   const { lang } = useLang();
   const t = T[lang];
+  const mobile = useIsMobile();
   const [name, setName] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = () => {
-    const trimmed = name.trim() || t.formDefaultPortfolio;
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError(t.formNameRequired);
+      return;
+    }
     onSubmit(trimmed);
   };
 
@@ -35,14 +42,14 @@ export default function TeamNameInput({ onSubmit }: TeamNameInputProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         style={{
-          background: C.cream, borderRadius: 12, padding: '40px 44px',
+          background: C.cream, borderRadius: 12, padding: mobile ? '28px 20px' : '40px 44px',
           maxWidth: 460, width: '100%',
           boxShadow: '0 8px 48px rgba(0,0,0,0.22)',
           textAlign: 'center',
         }}
       >
         <img src={`${import.meta.env.BASE_URL || '/'}icons/ebs.svg`} alt="EBS" style={{ width: 38, height: 35, margin: '0 auto 16px', display: 'block' }} />
-        <h2 style={{ ...F, fontSize: 26, fontWeight: 800, color: C.navy, margin: '0 0 8px' }}>
+        <h2 style={{ ...F, fontSize: mobile ? 22 : 26, fontWeight: 800, color: C.navy, margin: '0 0 8px' }}>
           {t.advGameTitle}
         </h2>
         <p style={{ ...F, fontSize: 14, color: C.gray, margin: '0 0 28px', lineHeight: 1.6 }}>
@@ -52,8 +59,16 @@ export default function TeamNameInput({ onSubmit }: TeamNameInputProps) {
         <input
           type="text"
           value={name}
-          onChange={e => setName(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+          onChange={e => {
+            setName(e.target.value);
+            if (error) setError('');
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
           placeholder={t.advTeamNamePlaceholder}
           maxLength={20}
           autoFocus
@@ -67,6 +82,11 @@ export default function TeamNameInput({ onSubmit }: TeamNameInputProps) {
           onFocus={e => { e.currentTarget.style.borderColor = C.blue; }}
           onBlur={e => { e.currentTarget.style.borderColor = C.creamy; }}
         />
+        {error && (
+          <div style={{ ...F, marginTop: 8, fontSize: 12, color: '#D64045', textAlign: 'left' }}>
+            {error}
+          </div>
+        )}
 
         <button
           onClick={handleSubmit}

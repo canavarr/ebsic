@@ -6,13 +6,13 @@
  *
  * Single-field index on finalValue (Descending) - usually auto-created by Firestore.
  */
-import { doc, setDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import type { LeaderboardEntry } from './leaderboard';
 
 const COLLECTION = 'leaderboard_advanced';
 
-function toSlug(name: string): string {
+export function toSlugAdvanced(name: string): string {
   return (name || '')
     .toLowerCase()
     .trim()
@@ -22,9 +22,22 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, '') || 'portfolio';
 }
 
+export async function isAdvancedNameTaken(name: string): Promise<boolean> {
+  if (!db) return false;
+  try {
+    const slug = toSlugAdvanced(name);
+    const ref = doc(db, COLLECTION, slug);
+    const snap = await getDoc(ref);
+    return snap.exists();
+  } catch (e) {
+    console.warn('[Advanced leaderboard] isAdvancedNameTaken failed:', e);
+    return false;
+  }
+}
+
 /**
  * Save a player's score to Firestore.
- * Falls back to no-op if db is unavailable.
+ * Doc ID is the slug (team name), so each name is unique.
  */
 export async function saveScoreAdvanced(
   seed: number,
@@ -34,9 +47,8 @@ export async function saveScoreAdvanced(
 ): Promise<void> {
   if (!db) return;
   try {
-    const slug = toSlug(teamName);
-    const docId = `${seed}_${Date.now()}_${slug}`;
-    await setDoc(doc(db, COLLECTION, docId), {
+    const slug = toSlugAdvanced(teamName);
+    await setDoc(doc(db, COLLECTION, slug), {
       seed,
       teamName,
       slug,

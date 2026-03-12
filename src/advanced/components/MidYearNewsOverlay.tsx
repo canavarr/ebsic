@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { C, F } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
 import { T } from '../../contexts/translations';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface MidYearNewsOverlayProps {
   year: number;
@@ -17,6 +18,7 @@ export default function MidYearNewsOverlay({
 }: MidYearNewsOverlayProps) {
   const { lang } = useLang();
   const t = T[lang];
+  const mobile = useIsMobile();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -42,7 +44,7 @@ export default function MidYearNewsOverlay({
       >
         {/* Header */}
         <div style={{
-          background: C.navy, padding: '16px 28px',
+          background: C.navy, padding: mobile ? '14px 18px' : '16px 28px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span style={{ ...F, fontSize: 12, fontWeight: 700, color: C.tan, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -54,7 +56,7 @@ export default function MidYearNewsOverlay({
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px 28px 28px' }}>
+        <div style={{ padding: mobile ? '16px 18px 20px' : '24px 28px 28px' }}>
           <p style={{ ...F, fontSize: 13, color: C.slate2, margin: '0 0 18px', lineHeight: 1.6 }}>
             {context}
           </p>

@@ -5,6 +5,7 @@ import { C, F, formatCurrency } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
 import { T } from '../../contexts/translations';
 import { getAssetDisplay } from '@/lib/assetDisplay';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const MACRO_LABELS: Record<MacroState, { label: string; bgColor: string }> = {
   GOOD_GROWTH: { label: 'Majanduskasv', bgColor: C.creamy },
@@ -24,6 +25,7 @@ interface EventsScreenProps {
 export default function EventsScreen({ yearResult, previousValue, onContinue, isLastYear }: EventsScreenProps) {
   const { lang } = useLang();
   const t = T[lang];
+  const mobile = useIsMobile();
   const macro = MACRO_LABELS[yearResult.macroState];
   const returnPct = (yearResult.totalPortfolioReturn * 100).toFixed(1);
   const isPositive = yearResult.totalPortfolioReturn >= 0;
@@ -34,7 +36,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.bg }}>
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: mobile ? '24px 16px' : '48px 24px' }}>
         {/* Year Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -43,7 +45,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
           <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>{t.advYearReview}</div>
-          <h1 style={{ ...F, fontSize: 56, fontWeight: 800, color: C.navy, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
+          <h1 style={{ ...F, fontSize: mobile ? 36 : 56, fontWeight: 800, color: C.navy, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
             {yearResult.year}
           </h1>
           {yearResult.scenarioTitle && (
@@ -134,11 +136,11 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           style={{
-            background: C.white, borderRadius: 16, padding: '28px 32px', marginBottom: 20,
+            background: C.white, borderRadius: 16, padding: mobile ? '20px 16px' : '28px 32px', marginBottom: 20,
             border: `1px solid ${C.creamy}`,
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fit, minmax(140px, 1fr))', gap: mobile ? 16 : 24, textAlign: 'center' }}>
             <div>
               <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advPrevValue}</div>
               <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(previousValue)}</div>
@@ -265,7 +267,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               return rows.map((row, i) => (
                 <div key={row.key} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 22px',
+                  padding: mobile ? '10px 14px' : '12px 22px',
                   borderBottom: i < rows.length - 1 ? '1px solid #f0f2f7' : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -291,8 +293,8 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           <button
             onClick={onContinue}
             style={{
-...F, padding: '15px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 12,
-                fontSize: 16, fontWeight: 700, cursor: 'pointer',
+              ...F, padding: mobile ? '13px 36px' : '15px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 12,
+              fontSize: mobile ? 15 : 16, fontWeight: 700, cursor: 'pointer',
               display: 'inline-flex', alignItems: 'center', gap: 10,
             }}
           >

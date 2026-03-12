@@ -5,11 +5,14 @@ import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const defaultBase = process.env.NODE_ENV === 'production' ? '/ebsic/' : '/'
 
 export default defineConfig({
-  base: process.env.VITE_BASE || '/ebsic/',
+  base: process.env.VITE_BASE || defaultBase,
   server: {
+    host: 'localhost',
     port: 5176,
+    strictPort: true,
   },
   resolve: {
     alias: { '@': resolve(__dirname, 'src/advanced') },

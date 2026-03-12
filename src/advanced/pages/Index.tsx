@@ -65,10 +65,9 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
   const rngRef = useRef<(() => number) | null>(null);
   const timelineRef = useRef<Map<number, YearScenario> | null>(null);
   const seedRef = useRef<number>(0);
+  const normalizedInitialTeamName = (initialTeamName ?? '').trim();
 
-  const [showTutorial, setShowTutorial] = useState(() => {
-    try { return localStorage.getItem('tutorial_completed') !== 'true'; } catch { return true; }
-  });
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const [game, setGame] = useState<GameState>(() => {
     const seed = generateWeeklySeed();
@@ -76,11 +75,11 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     rngRef.current = createSeededRandom(seed);
     const timelineRng = createSeededRandom(seed + 1);
     timelineRef.current = generateScenarioTimeline(timelineRng);
-    const startPhase = initialTeamName ? 'portfolio' : 'name';
+    const startPhase = normalizedInitialTeamName ? 'portfolio' : 'name';
 
     return {
       phase: startPhase,
-      teamName: initialTeamName || '',
+      teamName: normalizedInitialTeamName,
       investors: initialInvestors || '',
       currentYear: START_YEAR,
       holdings: [],
@@ -107,7 +106,9 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
 
   const handleTeamName = useCallback((name: string) => {
-    setGame(prev => ({ ...prev, phase: 'portfolio', teamName: name }));
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+    setGame(prev => ({ ...prev, phase: 'portfolio', teamName: trimmedName }));
   }, []);
 
   const runSimulation = useCallback((
@@ -308,7 +309,10 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
 
       <main>
-        {game.phase === 'portfolio' && (
+        {game.phase === 'portfolio' && !game.teamName.trim() && (
+          <TeamNameInput onSubmit={handleTeamName} />
+        )}
+        {game.phase === 'portfolio' && game.teamName.trim() && (
           <PortfolioBuilder
             teamName={game.teamName}
             investors={game.investors}
@@ -344,23 +348,21 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
         )}
 
         {game.phase === 'final' && (
-          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 40px' }}>
-            <SimulationResults
-              result={{
-                years: game.yearHistory,
-                finalPortfolioValue: game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance,
-                finalCashBalance: game.cashBalance,
-              }}
-              initialInvestment={game.initialInvestment}
-              yearlyAddition={YEARLY_ADDITION}
-              startYear={START_YEAR}
-              endYear={END_YEAR}
-              onReset={handleReset}
-              benchmarkData={game.benchmarkData ?? undefined}
-              teamName={game.teamName}
-              weeklySeed={seedRef.current}
-            />
-          </div>
+          <SimulationResults
+            result={{
+              years: game.yearHistory,
+              finalPortfolioValue: game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance,
+              finalCashBalance: game.cashBalance,
+            }}
+            initialInvestment={game.initialInvestment}
+            yearlyAddition={YEARLY_ADDITION}
+            startYear={START_YEAR}
+            endYear={END_YEAR}
+            onReset={handleReset}
+            benchmarkData={game.benchmarkData ?? undefined}
+            teamName={game.teamName}
+            weeklySeed={seedRef.current}
+          />
         )}
       </main>
     </div>

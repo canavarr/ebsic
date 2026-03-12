@@ -1,23 +1,37 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { C, F } from '@/lib/theme';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
-const STEPS = [
+const TIPS = [
   {
-    title: 'Tere tulemast investeerimismängu',
-    description: 'Sa oled investor, kelle eesmärk on 10 aasta jooksul (2026–2035) kasvatada oma portfelli väärtust. Iga aasta alguses saad 1 000 € lisaraha investeerimiseks.',
+    label: 'PORTFELL',
+    title: 'Sinu eesmärk',
+    description: 'Kasvatada portfelli väärtust 10 aasta jooksul (2026–2035). Iga aasta alguses saad 1 000 € lisaraha investeerimiseks.',
   },
   {
-    title: 'Neli sektorit',
-    description: 'Varad jagunevad neljaks: ETFid (fondid), Aktsiad (firmade osakud), Krüptoraha (digitaalsed varad) ja Toorained (metallid, põllumajandus). Igal sektoril on erinev risk ja tootlus.',
+    label: 'SEKTORID',
+    title: 'Neli varaklassi',
+    description: 'ETFid, Aktsiad, Krüptoraha ja Toorained — igal sektoril on erinev risk ja tootlus.',
   },
   {
+    label: 'HAJUTAMINE',
     title: 'Hajuta riski',
-    description: 'Ära pane kõiki mune ühte korvi. Kriisi ajal kaotavad kontsentreeritud portfellid rohkem. Hajutamine erinevate sektorite vahel kaitseb sind ootamatute sündmuste eest.',
+    description: 'Kriisi ajal kaotavad kontsentreeritud portfellid rohkem. Hajutamine kaitseb ootamatute sündmuste eest.',
   },
   {
-    title: 'Strateegilised valikud',
-    description: 'Iga aasta näed uudiseid ja pead tegema otsuseid. Aasta keskel saabuvad kiirteated, mis annavad vihjeid turumuutustest. Kasuta uuringuid, et saada lisainfot tuleviku kohta.',
+    label: 'STRATEEGIA',
+    title: 'Otsused loevad',
+    description: 'Aasta keskel saabuvad kiirteated turumuutustest. Kasuta uuringuid, et saada lisainfot tuleviku kohta.',
+  },
+  {
+    label: 'INFLATSIOON',
+    title: 'Investeerimata raha kaotab väärtust',
+    description: 'Vaba raha kaotab igal aastal ~1,5–9% inflatsiooni tõttu. Mida rohkem raha on investeerimata, seda suurem kahju.',
+  },
+  {
+    label: 'KONTSENTRATSIOON',
+    title: 'Ära pane kõike ühte sektorisse',
+    description: 'Kui ühe sektori osakaal on üle 65%, rakendub kriisi ajal lisapenalti. Üle 80% toob penalti kõigis turuolukordades.',
   },
 ];
 
@@ -26,23 +40,10 @@ interface TutorialOverlayProps {
 }
 
 export default function TutorialOverlay({ onClose }: TutorialOverlayProps) {
-  const [step, setStep] = useState(0);
-
-  const handleNext = () => {
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    } else {
-      try { localStorage.setItem('tutorial_completed', 'true'); } catch {}
-      onClose();
-    }
-  };
-
-  const handleSkip = () => {
-    try { localStorage.setItem('tutorial_completed', 'true'); } catch {}
+  const mobile = useIsMobile();
+  const handleClose = () => {
     onClose();
   };
-
-  const current = STEPS[step];
 
   return (
     <motion.div
@@ -51,71 +52,74 @@ export default function TutorialOverlay({ onClose }: TutorialOverlayProps) {
       exit={{ opacity: 0 }}
       style={{
         position: 'fixed', inset: 0, zIndex: 2000,
-        background: 'rgba(11, 29, 63, 0.85)',
+        background: 'rgba(11,29,63,0.8)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
       }}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            ...F, background: C.white, borderRadius: 16, padding: '44px 40px 36px',
-            maxWidth: 460, width: '100%', textAlign: 'center',
-            boxShadow: '0 16px 64px rgba(0,0,0,0.25)',
-          }}
-        >
-          <div style={{
-            ...F, fontSize: 11, fontWeight: 700, color: C.tan, textTransform: 'uppercase',
-            letterSpacing: '0.1em', marginBottom: 16,
-          }}>
-            {step + 1} / {STEPS.length}
-          </div>
-          <h2 style={{ ...F, fontSize: 22, fontWeight: 800, color: C.navy, margin: '0 0 14px' }}>
-            {current.title}
-          </h2>
-          <p style={{ ...F, fontSize: 14, color: C.slate, lineHeight: 1.7, margin: '0 0 32px' }}>
-            {current.description}
-          </p>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        style={{
+          background: C.white, borderRadius: 16, padding: 0,
+          maxWidth: 560, width: '100%',
+          boxShadow: '0 16px 64px rgba(0,0,0,0.25)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{
+          background: C.navy, padding: mobile ? '14px 18px' : '16px 28px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <span style={{ ...F, fontSize: 12, fontWeight: 700, color: C.tan, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Mängu juhend
+          </span>
+          <span style={{ ...F, fontSize: 11, fontWeight: 600, color: C.gray }}>
+            2026–2035
+          </span>
+        </div>
 
-          {/* Step dots */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 24 }}>
-            {STEPS.map((_, i) => (
-              <div key={i} style={{
-                width: i === step ? 20 : 6, height: 6, borderRadius: 3,
-                background: i === step ? C.blue : '#e4e8f0',
-                transition: 'all 0.3s',
-              }} />
+        <div style={{ padding: mobile ? '16px 18px 20px' : '24px 28px 28px', maxHeight: mobile ? '70vh' : 'none', overflowY: mobile ? 'auto' : undefined }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 10 : 12 }}>
+            {TIPS.map((tip, i) => (
+              <motion.div
+                key={tip.title}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + i * 0.12 }}
+                style={{
+                  background: C.bg, borderRadius: 10, padding: mobile ? '12px 14px' : '14px 18px',
+                  border: `1px solid ${C.creamy}`,
+                }}
+              >
+                <div style={{ ...F, fontSize: 10, fontWeight: 700, color: C.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+                  {tip.label}
+                </div>
+                <div style={{ ...F, fontSize: 14, fontWeight: 700, color: C.navy, lineHeight: 1.4, marginBottom: 4 }}>
+                  {tip.title}
+                </div>
+                <div style={{ ...F, fontSize: 12, color: C.slate2 ?? C.slate, lineHeight: 1.5 }}>
+                  {tip.description}
+                </div>
+              </motion.div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <div style={{ marginTop: 24 }}>
             <button
-              onClick={handleSkip}
+              onClick={handleClose}
               style={{
-                ...F, padding: '11px 24px', background: 'transparent',
-                border: `1.5px solid ${C.creamy}`, borderRadius: 10,
-                fontSize: 13, fontWeight: 600, color: C.gray, cursor: 'pointer',
+                ...F, width: '100%', padding: '13px 20px', borderRadius: 10,
+                background: C.creamy, color: C.buttonBlue, border: 'none',
+                fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              Jäta vahele
-            </button>
-            <button
-              onClick={handleNext}
-              style={{
-                ...F, padding: '11px 32px', background: C.creamy, color: C.buttonBlue, border: 'none',
-                borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              {step < STEPS.length - 1 ? 'Järgmine' : 'Alusta mängu'}
+              Alusta mängu →
             </button>
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

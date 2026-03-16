@@ -1,11 +1,10 @@
-import type { YearResult, MacroState } from '@/simulation/types';
+import type { YearResult, MacroState, Sector } from '@/simulation/types';
 import { ASSET_CATALOG } from '@/simulation/assets';
 import { motion } from 'framer-motion';
 import { C, F, formatCurrency } from '@/lib/theme';
 import { useLang } from '../../contexts/LangContext';
 import { T } from '../../contexts/translations';
-import { getAssetDisplay } from '@/lib/assetDisplay';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import { getAssetDisplay, getSectorLabel } from '@/lib/assetDisplay';
 
 const MACRO_LABELS: Record<MacroState, { label: string; bgColor: string }> = {
   GOOD_GROWTH: { label: 'Majanduskasv', bgColor: C.creamy },
@@ -25,7 +24,6 @@ interface EventsScreenProps {
 export default function EventsScreen({ yearResult, previousValue, onContinue, isLastYear }: EventsScreenProps) {
   const { lang } = useLang();
   const t = T[lang];
-  const mobile = useIsMobile();
   const macro = MACRO_LABELS[yearResult.macroState];
   const returnPct = (yearResult.totalPortfolioReturn * 100).toFixed(1);
   const isPositive = yearResult.totalPortfolioReturn >= 0;
@@ -36,7 +34,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
 
   return (
     <div style={{ ...F, minHeight: '100vh', background: C.bg }}>
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: mobile ? '24px 16px' : '48px 24px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
         {/* Year Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -45,7 +43,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
           <div style={{ ...F, fontSize: 16, fontWeight: 600, color: C.gray, marginBottom: 8 }}>{t.advYearReview}</div>
-          <h1 style={{ ...F, fontSize: mobile ? 36 : 56, fontWeight: 800, color: C.navy, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
+          <h1 style={{ ...F, fontSize: 56, fontWeight: 800, color: C.navy, margin: '0 0 16px', letterSpacing: '-0.03em' }}>
             {yearResult.year}
           </h1>
           {yearResult.scenarioTitle && (
@@ -85,7 +83,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
                   {liq.reason}
                 </p>
                 <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.tan }}>
-                  Kaotatud: {formatCurrency(liq.valueLost)} ({liq.percentLiquidated.toFixed(0)}% positsioonist)
+                  {t.advLost}: {formatCurrency(liq.valueLost)} ({liq.percentLiquidated.toFixed(0)}% {t.advOfPosition})
                 </div>
               </div>
             ))}
@@ -115,13 +113,14 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
                   .map(([sector, mod]) => {
                     const m = mod as number;
                     const isPos = m > 0;
+                    const label = getSectorLabel(sector as Sector, lang);
                     return (
                       <span key={sector} style={{
                         ...F, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
                         background: isPos ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.25)',
                         color: isPos ? '#7dd87d' : '#f08080',
                       }}>
-                        {sector} {isPos ? '+' : ''}{(m * 100).toFixed(0)}%
+                        {label} {isPos ? '+' : ''}{(m * 100).toFixed(0)}%
                       </span>
                     );
                   })}
@@ -136,21 +135,21 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
           style={{
-            background: C.white, borderRadius: 16, padding: mobile ? '20px 16px' : '28px 32px', marginBottom: 20,
+            background: C.white, borderRadius: 16, padding: '28px 32px', marginBottom: 20,
             border: `1px solid ${C.creamy}`,
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fit, minmax(140px, 1fr))', gap: mobile ? 16 : 24, textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' }}>
             <div>
               <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advPrevValue}</div>
               <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.slate }}>{formatCurrency(previousValue)}</div>
             </div>
             <div>
-              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Uus väärtus</div>
+              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advNewValue}</div>
               <div style={{ ...F, fontSize: 20, fontWeight: 700, color: C.navy }}>{formatCurrency(yearResult.totalPortfolioValue)}</div>
             </div>
             <div>
-              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>Tootlus</div>
+              <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.gray, marginBottom: 4 }}>{t.advReturnLabel}</div>
               <div style={{ ...F, fontSize: 20, fontWeight: 700, color: isPositive ? C.blue : C.tan }}>
                 {isPositive ? '+' : ''}{returnPct}%
               </div>
@@ -158,7 +157,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           </div>
           {yearResult.dividendsPaid > 0 && (
             <div style={{ ...F, fontSize: 13, color: C.gray, textAlign: 'center', marginTop: 12 }}>
-              Dividendid: {formatCurrency(yearResult.dividendsPaid)}
+              {t.advDividends}: {formatCurrency(yearResult.dividendsPaid)}
             </div>
           )}
           {!isLastYear && (
@@ -166,7 +165,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               ...F, fontSize: 14, fontWeight: 700, color: C.blue, textAlign: 'center', marginTop: 14,
               padding: '10px 16px', background: C.cream, borderRadius: 8,
             }}>
-              + 1 000,00 € lisatakse järgmisel aastal sinu portfelli
+              {t.advNextYearAddition}
             </div>
           )}
         </motion.div>
@@ -180,7 +179,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
             style={{ marginBottom: 20 }}
           >
             <h2 style={{ ...F, fontSize: 18, fontWeight: 700, color: C.navy, margin: '0 0 14px' }}>
-              Aasta sündmused
+              {t.advYearEvents}
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {headlines.map((headline, i) => (
@@ -206,13 +205,14 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
                   <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
                     {Object.entries(headline.sectorImpact).map(([sector, mod]) => {
                       const isPos = (mod as number) > 0;
+                      const label = getSectorLabel(sector as Sector, lang);
                       return (
                         <span key={sector} style={{
                           ...F, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
                           background: isPos ? C.creamy : '#e8eaef',
                           color: isPos ? C.blue : C.slate,
                         }}>
-                          {sector} {isPos ? '+' : ''}{((mod as number) * 100).toFixed(0)}%
+                          {label} {isPos ? '+' : ''}{((mod as number) * 100).toFixed(0)}%
                         </span>
                       );
                     })}
@@ -267,7 +267,7 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
               return rows.map((row, i) => (
                 <div key={row.key} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: mobile ? '10px 14px' : '12px 22px',
+                  padding: '12px 22px',
                   borderBottom: i < rows.length - 1 ? '1px solid #f0f2f7' : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -293,8 +293,8 @@ export default function EventsScreen({ yearResult, previousValue, onContinue, is
           <button
             onClick={onContinue}
             style={{
-              ...F, padding: mobile ? '13px 36px' : '15px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 12,
-              fontSize: mobile ? 15 : 16, fontWeight: 700, cursor: 'pointer',
+...F, padding: '15px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 12,
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
               display: 'inline-flex', alignItems: 'center', gap: 10,
             }}
           >

@@ -9,6 +9,20 @@ export interface LeaderboardEntry {
   isYou?: boolean;
 }
 
+export interface PortfolioBreakdownEntry {
+  ticker: string;
+  name: string;
+  investedAmount: number;
+  finalValue: number;
+  pct: number;
+}
+
+export interface SaveScoreMeta {
+  teamMembers?: string;
+  portfolioBreakdown?: PortfolioBreakdownEntry[];
+  categorySplit?: Record<string, number>;
+}
+
 const STORAGE_KEY = 'investgame_leaderboard';
 
 // AI opponent names (realistic Estonian teams)
@@ -55,21 +69,40 @@ interface StoredScore {
   value: number;
   returnPct: number;
   timestamp: number;
+  teamMembers?: string;
+  portfolioBreakdown?: PortfolioBreakdownEntry[];
+  categorySplit?: Record<string, number>;
 }
 
 /**
  * Save a player's score. Uses Firestore when db is available, else localStorage.
  * Returns a Promise that resolves when Firestore write finishes (so caller can await before showing results).
  */
-export function saveScore(seed: number, name: string, value: number, returnPct: number): Promise<void> {
+export function saveScore(
+  seed: number,
+  name: string,
+  value: number,
+  returnPct: number,
+  meta?: SaveScoreMeta
+): Promise<void> {
   try {
     const existing = loadScores();
-    existing.push({ seed, name, value, returnPct, timestamp: Date.now() });
+    existing.push({
+      seed,
+      name,
+      value,
+      returnPct,
+      timestamp: Date.now(),
+      teamMembers: meta?.teamMembers ?? '',
+      portfolioBreakdown: meta?.portfolioBreakdown ?? [],
+      categorySplit: meta?.categorySplit ?? {},
+    });
     const trimmed = existing.slice(-50);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   } catch { /* localStorage unavailable */ }
+
   if (db) {
-    return saveScoreAdvanced(seed, name, value, returnPct);
+    return saveScoreAdvanced(seed, name, value, returnPct, meta);
   }
   return Promise.resolve();
 }
@@ -121,8 +154,8 @@ export function buildLeaderboard(
 }
 
 /**
- * Build leaderboard from Firestore only — no AI/mock opponents.
- * Returns all-time scores (all completions) + current player.
+ * Build leaderboard from Firestore. Falls back to localStorage + AI when db unavailable or fetch fails
+ * (same behavior as Classic mode) so the leaderboard always shows data.
  */
 export async function buildLeaderboardAsync(
   seed: number,
@@ -131,8 +164,6 @@ export async function buildLeaderboardAsync(
   playerValue: number,
   playerReturnPct: number,
 ): Promise<LeaderboardEntry[]> {
-  const firestoreScores = await getLeaderboardAdvanced();
-
   const playerEntry: LeaderboardEntry = {
     name: playerName,
     value: playerValue,
@@ -140,12 +171,26 @@ export async function buildLeaderboardAsync(
     isYou: true,
   };
 
-  const others = firestoreScores
-    .filter(s => s.name !== playerName)
-    .map(s => ({ name: s.name, value: s.value, returnPct: s.returnPct }));
+  let firestoreScores: LeaderboardEntry[] = [];
+  if (db) {
+    try {
+      firestoreScores = await getLeaderboardAdvanced();
+    } catch (e) {
+      console.warn('[Advanced leaderboard] Firestore fetch failed, using localStorage fallback:', e);
+    }
+  }
 
-  const all = [...others, playerEntry]
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 100);
-  return all;
+  // If Firestore returned data, use it (like Classic when db works)
+  if (firestoreScores.length > 0) {
+    const others = firestoreScores
+      .filter(s => s.name !== playerName)
+      .map(s => ({ name: s.name, value: s.value, returnPct: s.returnPct }));
+    return [...others, playerEntry]
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 100);
+  }
+
+  // Fallback: localStorage + AI (like Classic when !db or fetch fails)
+  const syncBoard = buildLeaderboard(seed, totalInvested, playerName, playerValue, playerReturnPct);
+  return syncBoard;
 }

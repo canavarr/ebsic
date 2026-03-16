@@ -14,25 +14,10 @@ const LANG_KEY = 'ebsic_lang'
 
 export function LandingPage() {
   const navigate = useNavigate()
-  const hasValidName = (d) => (d?.name ?? '').toString().trim().length > 0
   return (
     <Landing
-      onStart={(d) => {
-        const valid = hasValidName(d)
-        // #region agent log
-        fetch('http://127.0.0.1:7441/ingest/85e31660-625a-4088-9983-5a9915d11208',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'08cc62'},body:JSON.stringify({sessionId:'08cc62',runId:'pre-fix',hypothesisId:'H2',location:'src/pages/classic/index.jsx:LandingPage.onStart',message:'onStart callback invoked',data:{valid,nameType:typeof d?.name,nameLength:typeof d?.name === 'string' ? d.name.length : null},timestamp:Date.now()})}).catch(()=>{})
-        // #endregion
-        if (!valid) return
-        navigate('/classic', { state: d })
-      }}
-      onStartAdvanced={(d) => {
-        const valid = hasValidName(d)
-        // #region agent log
-        fetch('http://127.0.0.1:7441/ingest/85e31660-625a-4088-9983-5a9915d11208',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'08cc62'},body:JSON.stringify({sessionId:'08cc62',runId:'pre-fix',hypothesisId:'H2',location:'src/pages/classic/index.jsx:LandingPage.onStartAdvanced',message:'onStartAdvanced callback invoked',data:{valid,nameType:typeof d?.name,nameLength:typeof d?.name === 'string' ? d.name.length : null},timestamp:Date.now()})}).catch(()=>{})
-        // #endregion
-        if (!valid) return
-        navigate('/advanced', { state: { ...d, teamName: (d.name ?? '').toString().trim() } })
-      }}
+      onStart={(d) => navigate('/classic', { state: d })}
+      onStartAdvanced={(d) => navigate('/advanced', { state: { ...d, teamName: d.name } })}
     />
   )
 }
@@ -48,30 +33,21 @@ export function ClassicGame() {
     try { localStorage.setItem(LANG_KEY, l) } catch {}
   }, [])
   const [screen, setScreen] = useState('build')
-  const [game, setGame] = useState(() => {
-    const s = location.state || {}
-    const n = (s.name ?? '').toString().trim()
-    return n ? { ...s, name: n, investors: s.investors ?? '' } : {}
-  })
+  const [game, setGame] = useState(() => location.state || {})
   const [portfolio, setPortfolio] = useState([])
   const [timelineStep, setTimelineStep] = useState(-1)
   const step = timelineStep < 0 ? 0 : timelineStep
   const year = TIMELINE_YEARS[Math.min(step, TIMELINE_YEARS.length - 1)]
-  const rawRouteName = location.state?.name
-  const name = (location.state?.name ?? '').toString().trim()
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7441/ingest/85e31660-625a-4088-9983-5a9915d11208',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'08cc62'},body:JSON.stringify({sessionId:'08cc62',runId:'pre-fix',hypothesisId:'H3',location:'src/pages/classic/index.jsx:ClassicGame.useEffect',message:'classic route guard check',data:{hasName:Boolean(name),trimmedNameLength:name.length,rawNameType:typeof rawRouteName,rawNameLength:typeof rawRouteName === 'string' ? rawRouteName.length : null},timestamp:Date.now()})}).catch(()=>{})
-    // #endregion
-    if (!name) navigate('/', { replace: true })
-  }, [name, navigate, rawRouteName])
+    if (!location.state?.name) navigate('/', { replace: true })
+  }, [location.state, navigate])
 
   useEffect(() => {
     if (analytics) logEvent(analytics, 'screen_view', { screen_name: 'classic_' + screen })
   }, [screen])
 
-  if (!name) return null
+  if (!location.state?.name) return null
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>

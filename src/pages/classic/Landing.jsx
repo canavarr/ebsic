@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { C, F } from '../../lib/theme'
 import { useLang } from '../../contexts/LangContext'
 import { T } from '../../contexts/translations'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import EBSNavbar from '../../components/EBSNavbar'
 import { isPortfolioNameTaken } from '../../lib/classicLeaderboard'
-import { isAdvancedNameTaken } from '../../advanced/lib/firebaseLeaderboard'
 import { RocketIcon } from '../../components/classic/ClassicIcons'
 
 export default function Landing({ onStart, onStartAdvanced }) {
@@ -18,15 +17,14 @@ export default function Landing({ onStart, onStartAdvanced }) {
   const [checking, setChecking] = useState(false)
   const [nameError, setNameError] = useState('')
   const landingIntro = mode === 'algajale' ? t.landingIntroAlgajale : t.landingIntroEdasijõudnule
-
-  const handleStart = async (e) => {
-    if (e) e.preventDefault()
-    const name = n.trim()
-    setNameError('')
-    if (!name) {
+  const handleStart = async () => {
+    const trimmed = n.trim()
+    if (!trimmed) {
       setNameError(t.formNameRequired)
       return
     }
+    const name = trimmed
+    setNameError('')
     setChecking(true)
     try {
       if (mode === 'algajale') {
@@ -37,11 +35,6 @@ export default function Landing({ onStart, onStartAdvanced }) {
         }
         onStart({ name, investors: inv })
       } else {
-        const takenAdv = await isAdvancedNameTaken(name)
-        if (takenAdv) {
-          setNameError(t.formNameTaken)
-          return
-        }
         onStartAdvanced({ name, investors: inv })
       }
     } catch (err) {
@@ -86,35 +79,15 @@ export default function Landing({ onStart, onStartAdvanced }) {
             </div>
             <div style={{ marginBottom: 16 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formPortfolioName} *</div>
-              <input
-                value={n}
-                onChange={e => { setN(e.target.value); setNameError(''); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (n.trim()) handleStart(e); } }}
-                aria-required="true"
-                aria-invalid={!!nameError}
-                aria-describedby={nameError ? 'name-error' : undefined}
-                id="portfolio-name"
-                style={{ display: 'block', width: '100%', height: 46, border: nameError ? '2px solid #D64045' : '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }}
-              />
-              {nameError && <div id="name-error" style={{ ...F, fontSize: 12, color: '#D64045', marginTop: 6 }}>{nameError}</div>}
+              <input value={n} onChange={e => { setN(e.target.value); setNameError(''); }} style={{ display: 'block', width: '100%', height: 46, border: nameError ? '2px solid #D64045' : '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
+              {nameError && <div style={{ ...F, fontSize: 12, color: '#D64045', marginTop: 6 }}>{nameError}</div>}
             </div>
             <div style={{ marginBottom: 32 }}>
               <div style={{ ...F, fontSize: 13, fontWeight: 700, color: '#1F3C8E', marginBottom: 7 }}>{t.formInvestors}</div>
               <input value={inv} onChange={e => setInv(e.target.value)} style={{ display: 'block', width: '100%', height: 46, border: '1px solid #E8DECA', borderRadius: 8, padding: '0 14px', fontSize: 15, fontFamily: 'Mulish,sans-serif', outline: 'none', background: C.white, color: C.navy, boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button
-                type="button"
-                disabled={checking || !n.trim()}
-                onClick={(e) => {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7441/ingest/85e31660-625a-4088-9983-5a9915d11208',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'08cc62'},body:JSON.stringify({sessionId:'08cc62',runId:'pre-fix',hypothesisId:'H5',location:'src/pages/classic/Landing.jsx:startButton',message:'start button onClick fired',data:{checking,rawNameLength:n.length,trimmedNameLength:n.trim().length,isBlocked:checking || !n.trim()},timestamp:Date.now()})}).catch(()=>{})
-                  // #endregion
-                  if (checking || !n.trim()) return
-                  handleStart(e)
-                }}
-                style={{ ...F, width: 240, height: 50, background: (checking || !n.trim()) ? '#F2E8D8' : C.creamy, border: (checking || !n.trim()) ? `1px solid ${C.creamy}` : 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: (checking || !n.trim()) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking ? 0.8 : 1 }}
-              >
+              <button type="button" onClick={handleStart} disabled={checking || !n.trim()} style={{ ...F, width: 240, height: 50, background: C.creamy, border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, color: '#1F3C8E', cursor: checking || !n.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: checking || !n.trim() ? 0.6 : 1 }}>
                 {checking ? t.formChecking : t.formOpen} {!checking && <RocketIcon color="#1F3C8E" size={18} />}
               </button>
             </div>

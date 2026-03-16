@@ -15,7 +15,7 @@ import { generateScenarioTimeline, getResearchHint } from '@/simulation/scenario
 import { getMidYearNews } from '@/simulation/midYearNews';
 
 import { simulateBenchmark, type BenchmarkResult } from '@/simulation/benchmark';
-import { saveScore } from '@/lib/leaderboard';
+import { saveScore, type SaveScoreMeta } from '@/lib/leaderboard';
 import type { PortfolioHolding, YearResult, MacroState, Sector } from '@/simulation/types';
 import type { YearScenario } from '@/simulation/scenarios';
 import { AnimatePresence } from 'framer-motion';
@@ -30,6 +30,73 @@ const YEARLY_ADDITION = 1000;
 const RESEARCH_COST = 1000;
 const TRANSACTION_FEE = 0.015; // 1.5%
 const MAX_TRADES_PER_YEAR = 10;
+
+const ADV_CATEGORY_BY_SECTOR: Record<Sector, 'ETFs' | 'Aktsiad' | 'Krüpto' | 'Varad'> = {
+  ETF: 'ETFs',
+  STOCK: 'Aktsiad',
+  CRYPTO: 'Krüpto',
+  COMMODITY: 'Varad',
+};
+
+function buildAdvancedScoreMeta(
+  holdings: PortfolioHolding[],
+  cashBalance: number,
+  teamMembers: string
+): SaveScoreMeta {
+  const cash = Math.max(0, cashBalance);
+  const holdingsTotal = holdings.reduce((s, h) => s + h.valueAtStart, 0);
+  const total = holdingsTotal + cash || 1;
+
+  const portfolioBreakdown: NonNullable<SaveScoreMeta['portfolioBreakdown']> = holdings
+    .map((h) => {
+      const asset = ASSET_CATALOG.find((a) => a.id === h.assetId);
+      if (!asset) return null;
+      const finalValue = h.valueAtStart;
+      return {
+        ticker: asset.ticker,
+        name: asset.name,
+        investedAmount: finalValue,
+        finalValue,
+        pct: Math.round((finalValue / total) * 1000) / 10,
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => !!row);
+
+  if (cash > 0) {
+    portfolioBreakdown.push({
+      ticker: 'CASH',
+      name: 'Raha',
+      investedAmount: cash,
+      finalValue: cash,
+      pct: Math.round((cash / total) * 1000) / 10,
+    });
+  }
+
+  const categoryTotals: Record<string, number> = {
+    Raha: cash,
+    ETFs: 0,
+    Aktsiad: 0,
+    Krüpto: 0,
+    Varad: 0,
+  };
+
+  for (const h of holdings) {
+    const asset = ASSET_CATALOG.find((a) => a.id === h.assetId);
+    if (!asset) continue;
+    categoryTotals[ADV_CATEGORY_BY_SECTOR[asset.sector]] += h.valueAtStart;
+  }
+
+  const categorySplit: Record<string, number> = {};
+  for (const [category, amount] of Object.entries(categoryTotals)) {
+    if (amount > 0) categorySplit[category] = Math.round((amount / total) * 1000) / 10;
+  }
+
+  return {
+    teamMembers,
+    portfolioBreakdown,
+    categorySplit,
+  };
+}
 
 type GamePhase = 'name' | 'portfolio' | 'events' | 'final';
 
@@ -65,7 +132,6 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
   const rngRef = useRef<(() => number) | null>(null);
   const timelineRef = useRef<Map<number, YearScenario> | null>(null);
   const seedRef = useRef<number>(0);
-  const normalizedInitialTeamName = (initialTeamName ?? '').trim();
 
   const [showTutorial, setShowTutorial] = useState(true);
 
@@ -75,11 +141,11 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     rngRef.current = createSeededRandom(seed);
     const timelineRng = createSeededRandom(seed + 1);
     timelineRef.current = generateScenarioTimeline(timelineRng);
-    const startPhase = normalizedInitialTeamName ? 'portfolio' : 'name';
+    const startPhase = initialTeamName ? 'portfolio' : 'name';
 
     return {
       phase: startPhase,
-      teamName: normalizedInitialTeamName,
+      teamName: initialTeamName || '',
       investors: initialInvestors || '',
       currentYear: START_YEAR,
       holdings: [],
@@ -106,9 +172,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
 
   const handleTeamName = useCallback((name: string) => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
-    setGame(prev => ({ ...prev, phase: 'portfolio', teamName: trimmedName }));
+    setGame(prev => ({ ...prev, phase: 'portfolio', teamName: name }));
   }, []);
 
   const runSimulation = useCallback((
@@ -184,9 +248,14 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     if (game.currentYear >= END_YEAR) {
       const benchmark = simulateBenchmark(timelineRef.current!, seedRef.current);
       const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
-      const finalValue = game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance;
+      const finalValue = lastYear.totalPortfolioValue;
       const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
-      await saveScore(seedRef.current, game.teamName, finalValue, returnPct);
+      const meta = buildAdvancedScoreMeta(game.holdings, game.cashBalance, game.investors);
+      try {
+        await saveScore(seedRef.current, game.teamName, finalValue, returnPct, meta);
+      } catch (e) {
+        console.error('[Advanced leaderboard] saveScore failed:', e);
+      }
       setGame(prev => ({ ...prev, phase: 'final', benchmarkData: benchmark }));
       return;
     }
@@ -206,7 +275,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
       showMidYearNews: false,
       tradesUsedThisYear: 0,
     }));
-  }, [game.currentYear, game.cashBalance, game.holdings, game.yearHistory, game.teamName]);
+  }, [game.currentYear, game.cashBalance, game.holdings, game.yearHistory, game.teamName, game.investors]);
 
   const handleEndGame = useCallback(async (holdings: PortfolioHolding[], unusedCash: number) => {
     const rng = rngRef.current!;
@@ -238,7 +307,12 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
     const totalInvested = INITIAL_BUDGET + (END_YEAR - START_YEAR) * YEARLY_ADDITION;
     const finalValue = currentHoldings.reduce((s, h) => s + h.valueAtStart, 0) + currentCash;
     const returnPct = ((finalValue - totalInvested) / totalInvested) * 100;
-    await saveScore(seedRef.current, game.teamName, finalValue, returnPct);
+    const meta = buildAdvancedScoreMeta(currentHoldings, currentCash, game.investors);
+    try {
+      await saveScore(seedRef.current, game.teamName, finalValue, returnPct, meta);
+    } catch (e) {
+      console.error('[Advanced leaderboard] saveScore failed:', e);
+    }
 
     setGame(prev => ({
       ...prev,
@@ -249,7 +323,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
       yearHistory: newYearHistory,
       benchmarkData: benchmark,
     }));
-  }, [game.currentYear, game.previousMacro, game.yearHistory, game.teamName]);
+  }, [game.currentYear, game.previousMacro, game.yearHistory, game.teamName, game.investors]);
 
   const handleResearch = useCallback(() => {
     const nextYear = game.currentYear + 1;
@@ -309,10 +383,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
 
       <main>
-        {game.phase === 'portfolio' && !game.teamName.trim() && (
-          <TeamNameInput onSubmit={handleTeamName} />
-        )}
-        {game.phase === 'portfolio' && game.teamName.trim() && (
+        {game.phase === 'portfolio' && (
           <PortfolioBuilder
             teamName={game.teamName}
             investors={game.investors}
@@ -348,21 +419,23 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
         )}
 
         {game.phase === 'final' && (
-          <SimulationResults
-            result={{
-              years: game.yearHistory,
-              finalPortfolioValue: game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance,
-              finalCashBalance: game.cashBalance,
-            }}
-            initialInvestment={game.initialInvestment}
-            yearlyAddition={YEARLY_ADDITION}
-            startYear={START_YEAR}
-            endYear={END_YEAR}
-            onReset={handleReset}
-            benchmarkData={game.benchmarkData ?? undefined}
-            teamName={game.teamName}
-            weeklySeed={seedRef.current}
-          />
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 40px' }}>
+            <SimulationResults
+              result={{
+                years: game.yearHistory,
+                finalPortfolioValue: game.holdings.reduce((s, h) => s + h.valueAtStart, 0) + game.cashBalance,
+                finalCashBalance: game.cashBalance,
+              }}
+              initialInvestment={game.initialInvestment}
+              yearlyAddition={YEARLY_ADDITION}
+              startYear={START_YEAR}
+              endYear={END_YEAR}
+              onReset={handleReset}
+              benchmarkData={game.benchmarkData ?? undefined}
+              teamName={game.teamName}
+              weeklySeed={seedRef.current}
+            />
+          </div>
         )}
       </main>
     </div>

@@ -1,18 +1,23 @@
 /**
- * Firestore adapter for Advanced mode leaderboard.
- * Collection: leaderboard_advanced
- * Doc ID: {seed}_{slug} (allows same team multiple runs)
- * Fields: seed, teamName, slug, finalValue, returnPct, timestamp
+ * Firestore adapter for Advanced mode leaderboard ONLY.
  *
- * Single-field index on finalValue (Descending) - usually auto-created by Firestore.
+ * CRITICAL: Advanced and Classic are different game modes with different rules.
+ * They MUST use separate Firestore collections and must never be compared.
+ *
+ * - Classic: uses classicLeaderboard.js → collection "leaderboard"
+ * - Advanced: uses this file → collection "leaderboard_advanced"
  */
-import { doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, setDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
-import type { LeaderboardEntry } from './leaderboard';
+import type { LeaderboardEntry, SaveScoreMeta } from './leaderboard';
 
-const COLLECTION = 'leaderboard_advanced';
+/** Advanced-only collection. NEVER use "leaderboard" (Classic) here. */
+const ADVANCED_LEADERBOARD_COLLECTION = 'leaderboard_advanced';
+if (ADVANCED_LEADERBOARD_COLLECTION === 'leaderboard') {
+  throw new Error('Advanced must NOT use Classic leaderboard collection');
+}
 
-export function toSlugAdvanced(name: string): string {
+function toSlug(name: string): string {
   return (name || '')
     .toLowerCase()
     .trim()
@@ -22,65 +27,56 @@ export function toSlugAdvanced(name: string): string {
     .replace(/^-|-$/g, '') || 'portfolio';
 }
 
-export async function isAdvancedNameTaken(name: string): Promise<boolean> {
-  if (!db) return false;
-  try {
-    const slug = toSlugAdvanced(name);
-    const ref = doc(db, COLLECTION, slug);
-    const snap = await getDoc(ref);
-    return snap.exists();
-  } catch (e) {
-    console.warn('[Advanced leaderboard] isAdvancedNameTaken failed:', e);
-    return false;
-  }
+function toNumber(value: unknown): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
 }
 
 /**
- * Save a player's score to Firestore.
- * Doc ID is the slug (team name), so each name is unique.
+ * Save a player's score to Firestore in a dedicated Advanced collection.
+ * Mirrors Classic payload fields where possible.
  */
 export async function saveScoreAdvanced(
   seed: number,
   teamName: string,
   finalValue: number,
-  returnPct: number
+  returnPct: number,
+  meta?: SaveScoreMeta
 ): Promise<void> {
   if (!db) return;
-  try {
-    const slug = toSlugAdvanced(teamName);
-    await setDoc(doc(db, COLLECTION, slug), {
-      seed,
-      teamName,
-      slug,
-      finalValue,
-      returnPct,
-      timestamp: Date.now(),
-    });
-  } catch (e) {
-    console.error('[Advanced leaderboard] saveScoreAdvanced failed:', e);
-  }
+  const slug = toSlug(teamName);
+  const timestamp = Date.now();
+  const docEntry = {
+    seed,
+    slug,
+    teamName,
+    teamMembers: meta?.teamMembers ?? '',
+    finalValue,
+    returnPct,
+    profitPercent: returnPct,
+    timestamp,
+    portfolioBreakdown: meta?.portfolioBreakdown ?? [],
+    categorySplit: meta?.categorySplit ?? {},
+  };
+  const docId = `${timestamp}_${slug}`;
+  await setDoc(doc(db, ADVANCED_LEADERBOARD_COLLECTION, docId), docEntry);
 }
 
 /**
- * Fetch all leaderboard entries from Firestore, sorted by finalValue descending.
- * Returns empty array if db unavailable or query fails.
+ * Fetch Advanced leaderboard entries from Firestore, sorted by finalValue descending.
  */
 export async function getLeaderboardAdvanced(): Promise<LeaderboardEntry[]> {
   if (!db) return [];
   try {
-    const col = collection(db, COLLECTION);
-    const q = query(
-      col,
-      orderBy('finalValue', 'desc'),
-      limit(100)
-    );
+    const col = collection(db, ADVANCED_LEADERBOARD_COLLECTION);
+    const q = query(col, orderBy('finalValue', 'desc'), limit(50));
     const snap = await getDocs(q);
-    return snap.docs.map(d => {
-      const data = d.data();
+    return snap.docs.map((d) => {
+      const data = d.data() as Record<string, unknown>;
       return {
-        name: data.teamName ?? '',
-        value: data.finalValue ?? 0,
-        returnPct: data.returnPct ?? 0,
+        name: String(data.teamName ?? ''),
+        value: toNumber(data.finalValue),
+        returnPct: toNumber(data.returnPct ?? data.profitPercent),
       };
     });
   } catch (e) {

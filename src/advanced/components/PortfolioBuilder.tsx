@@ -10,7 +10,6 @@ import { T } from '../../contexts/translations';
 import { getAssetDisplay } from '@/lib/assetDisplay';
 import { getSharedAssetVisual } from '../../data/sharedAssetMetadata';
 import { Logo } from '../../components/classic/ClassicShared';
-import { useIsMobile } from '../../hooks/useIsMobile';
 
 type AssetCategory = 'ETFs' | 'Aktsiad' | 'Krüptoraha' | 'Toorained';
 
@@ -62,39 +61,29 @@ function Badge({ label }: { label: string }) {
 }
 
 /* ─── Donut ─── */
-function Donut({ segments, mobile = false }: { segments: { name: string; value: number; color: string }[]; mobile?: boolean }) {
+function Donut({ segments }: { segments: { name: string; value: number; color: string }[] }) {
   const total = segments.reduce((s, seg) => s + seg.value, 0) || 1;
   const data = segments.length && segments.some(s => s.value > 0) ? segments : [{ name: 'empty', value: 1, color: '#dde1ec' }];
-  const size = mobile ? 100 : 140;
-  const ir = mobile ? 28 : 44;
-  const or = mobile ? 42 : 62;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 16 : 24 }}>
-      <div style={{ width: size, height: size, flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+      <div style={{ width: 140, height: 140, flexShrink: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={ir} outerRadius={or} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
+            <Pie data={data} cx="50%" cy="50%" innerRadius={44} outerRadius={62} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
               {data.map((s, i) => <Cell key={i} fill={s.color} />)}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: mobile ? 6 : 9 }}>
-        {[
-          { key: 'Raha', color: C.blue },
-          { key: 'ETFs', color: '#5B8DEF' },
-          { key: 'Aktsiad', color: C.tan },
-          { key: 'Krüpto', color: C.gray },
-          { key: 'Varad', color: C.slate3 },
-        ].map(row => {
-          const seg = segments.find(s => s.name === row.key);
-          const pct = seg ? Math.round((seg.value / total) * 100) : 0;
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {segments.map((seg, i) => {
+          const pct = Math.round((seg.value / total) * 100);
           return (
-            <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: mobile ? 6 : 9, minWidth: mobile ? 90 : 120 }}>
-              <div style={{ width: mobile ? 8 : 10, height: mobile ? 8 : 10, borderRadius: '50%', background: row.color, flexShrink: 0 }} />
-              <span style={{ ...F, fontSize: mobile ? 11 : 13, color: C.slate2, flex: 1 }}>{row.key}</span>
-              <span style={{ ...F, fontSize: mobile ? 11 : 13, color: C.gray2 }}>{pct}%</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 120 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+              <span style={{ ...F, fontSize: 13, color: C.slate2, flex: 1 }}>{seg.name}</span>
+              <span style={{ ...F, fontSize: 13, color: C.gray2 }}>{pct}%</span>
             </div>
           );
         })}
@@ -131,7 +120,7 @@ function TradeCounter({ used, max, label }: { used: number; max: number; label: 
 }
 
 /* ─── Header ─── */
-function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoVal, rawVal, currentYear, totalBudget, portfolio, tradesUsed, maxTrades, transactionFee, mobile }: {
+function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoVal, rawVal, currentYear, totalBudget, portfolio, tradesUsed, maxTrades, transactionFee }: {
   teamName: string;
   investors: string;
   cash: number;
@@ -145,68 +134,66 @@ function PortfolioHeader({ teamName, investors, cash, etfVal, stocksVal, cryptoV
   tradesUsed: number;
   maxTrades: number;
   transactionFee: number;
-  mobile: boolean;
 }) {
   const { lang } = useLang();
   const t = T[lang];
   const totalVal = etfVal + stocksVal + cryptoVal + rawVal;
   const donutSegments = [
-    { name: 'Raha', value: Math.max(0, cash), color: C.blue },
-    { name: 'ETFs', value: etfVal, color: '#5B8DEF' },
-    { name: 'Aktsiad', value: stocksVal, color: C.tan },
-    { name: 'Krüpto', value: cryptoVal, color: C.gray },
-    { name: 'Varad', value: rawVal, color: C.slate3 },
+    { name: t.headerCash, value: Math.max(0, cash), color: C.blue },
+    { name: t.advETFs, value: etfVal, color: '#5B8DEF' },
+    { name: t.headerStocks, value: stocksVal, color: C.tan },
+    { name: t.headerCrypto, value: cryptoVal, color: C.gray },
+    { name: t.headerCommodities, value: rawVal, color: C.slate3 },
   ];
 
   const cashAmt = Math.max(0, cash);
-  const pad = mobile ? 16 : 48;
-
   const rows = [
-    { l: 'Aasta', v: String(currentYear), warn: false },
-    { l: 'Koguväärtus', v: totalVal > 0 ? formatCurrency(totalVal + cash) : formatCurrency(cash), warn: false },
-    { l: 'Investeeritud', v: formatCurrency(totalVal), warn: false },
-    { l: 'Vaba raha', v: formatCurrency(cashAmt), warn: false },
-    { l: 'ETFs', v: formatCurrency(etfVal), warn: false },
-    { l: 'Aktsiad', v: formatCurrency(stocksVal), warn: false },
-    { l: 'Krüpto', v: formatCurrency(cryptoVal), warn: false },
-    { l: 'Varad', v: formatCurrency(rawVal), warn: false },
+    { l: t.advYear, v: String(currentYear), warn: false },
+    { l: t.advTotalValue, v: totalVal > 0 ? formatCurrency(totalVal + cash) : formatCurrency(cash), warn: false },
+    { l: t.advInvested, v: formatCurrency(totalVal), warn: false },
+    { l: t.advFreeCash, v: formatCurrency(cashAmt), warn: false },
+    { l: t.advETFs, v: formatCurrency(etfVal), warn: false },
+    { l: t.headerStocks, v: formatCurrency(stocksVal), warn: false },
+    { l: t.headerCrypto, v: formatCurrency(cryptoVal), warn: false },
+    { l: t.headerCommodities, v: formatCurrency(rawVal), warn: false },
   ];
 
   return (
-    <div style={{ background: C.bg, padding: `${mobile ? 20 : 28}px ${pad}px ${mobile ? 20 : 24}px`, borderBottom: '1px solid #dde1ec' }}>
-      <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'flex-start', justifyContent: 'space-between', maxWidth: 1100, margin: '0 auto', gap: mobile ? 20 : 24 }}>
+    <div style={{ background: C.bg, padding: '28px 48px 24px', borderBottom: '1px solid #dde1ec' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', maxWidth: 1100, margin: '0 auto', gap: 24 }}>
         <div style={{ flex: 1 }}>
-          <h1 style={{ ...F, margin: '0 0 4px', fontSize: mobile ? 24 : 36, fontWeight: 800, color: C.blue, letterSpacing: '-0.02em' }}>{teamName}</h1>
-          <p style={{ ...F, margin: '0 0 12px', color: C.gray2, fontSize: mobile ? 12 : 14 }}>{investors || t.teamMembers}</p>
+          <h1 style={{ ...F, margin: '0 0 4px', fontSize: 36, fontWeight: 800, color: C.blue, letterSpacing: '-0.02em' }}>{teamName}</h1>
+          <p style={{ ...F, margin: '0 0 12px', color: C.gray2, fontSize: 14 }}>{investors || t.teamMembers}</p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 12 : 24, marginBottom: 16, flexWrap: 'wrap' }}>
+          {/* Trade counter + fee info */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 16 }}>
             <TradeCounter used={tradesUsed} max={maxTrades} label={t.advTrades} />
             <div style={{ ...F, fontSize: 11, fontWeight: 600, color: C.gray }}>
-              Tasu {(transactionFee * 100).toFixed(1)}%
+              {t.advFeeLabel} {(transactionFee * 100).toFixed(1)}%
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px 0', maxWidth: 500 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px 0', maxWidth: 500 }}>
             {rows.slice(0, 4).map(({ l, v, warn }) => (
               <div key={l}>
-                <div style={{ ...F, fontSize: mobile ? 11 : 12, fontWeight: 600, color: warn ? C.tan2 : C.blue, marginBottom: 2 }}>{l}</div>
-                <div style={{ ...F, fontSize: mobile ? 13 : 14, fontWeight: 600, color: warn ? C.tan2 : C.slate2 }}>{v}</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.blue, marginBottom: 2 }}>{l}</div>
+                <div style={{ ...F, fontSize: 14, fontWeight: 600, color: C.slate2 }}>{v}</div>
               </div>
             ))}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px 0', maxWidth: 500, marginTop: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px 0', maxWidth: 500, marginTop: 12 }}>
             {rows.slice(4).map(({ l, v }) => (
               <div key={l}>
-                <div style={{ ...F, fontSize: mobile ? 11 : 12, fontWeight: 600, color: C.blue, marginBottom: 2 }}>{l}</div>
-                <div style={{ ...F, fontSize: mobile ? 13 : 14, fontWeight: 600, color: C.slate2 }}>{v}</div>
+                <div style={{ ...F, fontSize: 12, fontWeight: 600, color: C.blue, marginBottom: 2 }}>{l}</div>
+                <div style={{ ...F, fontSize: 14, fontWeight: 600, color: C.slate2 }}>{v}</div>
               </div>
             ))}
           </div>
         </div>
         <div>
-          {!mobile && <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.blue, marginBottom: 14 }}>Portfelli jaotus</div>}
-          <Donut segments={donutSegments} mobile={mobile} />
-          {!mobile && <RiskMeter portfolio={portfolio} />}
+          <div style={{ ...F, fontSize: 13, fontWeight: 700, color: C.blue, marginBottom: 14 }}>{t.headerAllocation}</div>
+          <Donut segments={donutSegments} />
+          <RiskMeter portfolio={portfolio} />
         </div>
       </div>
     </div>
@@ -261,9 +248,9 @@ function AssetCard({ asset, shares, totalValue, canBuy, canTrade, onInfo, onBuy,
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <button onClick={() => onInfo(asset)} style={{ ...F, display: 'flex', alignItems: 'center', gap: 5, height: 32, padding: '0 12px', background: C.white, border: '1px solid #929FC2', borderRadius: 8, fontSize: 12, fontWeight: 600, color: C.gray, cursor: 'pointer' }}>
-          Info <InfoIcon />
+          {t.cardInfo} <InfoIcon />
         </button>
-        <span style={{ ...F, flex: 1, textAlign: 'center' as const, fontSize: 12, color: C.gray }}>{totalValue > 0 ? `Väärtus: ${formatCurrency(totalValue)}` : ''}</span>
+        <span style={{ ...F, flex: 1, textAlign: 'center' as const, fontSize: 12, color: C.gray }}>{totalValue > 0 ? `${t.cardValue}: ${formatCurrency(totalValue)}` : ''}</span>
         <button onClick={() => onSell(asset)} disabled={!canSell} style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: canSell ? C.tan : '#EBEFF2', cursor: canSell ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <RemoveIcon color={canSell ? '#fff' : C.gray2} />
         </button>
@@ -314,7 +301,7 @@ function Modal({ asset, onClose }: { asset: AssetDefinition | null; onClose: () 
           {description}
         </p>
         <button onClick={onClose} style={{ ...F, width: '100%', height: 50, background: C.white, border: `1.5px solid ${C.creamy}`, borderRadius: 10, fontSize: 16, fontWeight: 400, color: C.slate, cursor: 'pointer' }}>
-          Sulge
+          {t.modalClose}
         </button>
       </div>
     </div>
@@ -349,7 +336,6 @@ export default function PortfolioBuilder({
 }: PortfolioBuilderProps) {
   const { lang } = useLang();
   const t = T[lang];
-  const mobile = useIsMobile();
   const [portfolio, setPortfolio] = useState<{ assetId: string; investedAmount: number }[]>(initialHoldings ?? []);
   const [modalAsset, setModalAsset] = useState<AssetDefinition | null>(null);
 
@@ -462,12 +448,12 @@ export default function PortfolioBuilder({
     const crypto = ASSET_CATALOG.filter(a => a.sector === 'CRYPTO');
     const commodities = ASSET_CATALOG.filter(a => a.sector === 'COMMODITY');
     return [
-      { title: 'ETFs', assets: etfs, bg: C.white },
-      { title: 'Aktsiad', assets: stocks, bg: C.cream },
-      { title: 'Krüptoraha', assets: crypto, bg: C.white },
-      { title: 'Toorained', assets: commodities, bg: C.cream },
+      { title: t.advETFs, assets: etfs, bg: C.white },
+      { title: t.sectionStocks, assets: stocks, bg: C.cream },
+      { title: t.sectionCrypto, assets: crypto, bg: C.white },
+      { title: t.sectionCommodities, assets: commodities, bg: C.cream },
     ];
-  }, []);
+  }, [t]);
 
   const nextYear = currentYear + 1;
   const isFirstYear = currentYear === 2026;
@@ -492,12 +478,11 @@ export default function PortfolioBuilder({
         tradesUsed={tradesUsed}
         maxTrades={maxTrades}
         transactionFee={transactionFee}
-        mobile={mobile}
       />
 
       {/* Research Panel */}
       {researchCost && onResearch && (
-        <div style={{ padding: `16px ${mobile ? 16 : 40}px 0` }}>
+        <div style={{ padding: '16px 40px 0' }}>
           <ResearchPanel
             cost={researchCost}
             canAfford={!!canAffordResearch && canTrade}
@@ -510,9 +495,9 @@ export default function PortfolioBuilder({
 
       {/* Mid-year news alert */}
       {midYearNewsSeen && (
-        <div style={{ maxWidth: 1200, margin: '12px auto 0', padding: `0 ${mobile ? 16 : 40}px` }}>
+        <div style={{ maxWidth: 1200, margin: '12px auto 0', padding: '0 40px' }}>
           <div style={{
-            ...F, fontSize: mobile ? 12 : 13, fontWeight: 700, color: C.navy, background: C.cream,
+            ...F, fontSize: 13, fontWeight: 700, color: C.navy, background: C.cream,
             border: `1px solid ${C.creamy}`, borderRadius: 10, padding: '12px 18px',
           }}>
             {t.advMidYearRead}
@@ -522,7 +507,7 @@ export default function PortfolioBuilder({
 
       {/* Transaction fee notice */}
       {feeAmount > 0 && (
-        <div style={{ maxWidth: 1200, margin: '12px auto 0', padding: `0 ${mobile ? 16 : 40}px` }}>
+        <div style={{ maxWidth: 1200, margin: '12px auto 0', padding: '0 40px' }}>
           <div style={{
             ...F, fontSize: 12, fontWeight: 600, color: C.slate,
             background: C.cream, border: `1px solid ${C.creamy}`, borderRadius: 8, padding: '8px 14px',
@@ -532,15 +517,13 @@ export default function PortfolioBuilder({
         </div>
       )}
 
-
       {grouped.map(({ title, assets, bg }) => {
         if (assets.length === 0) return null;
-        const pad = mobile ? 16 : 40;
         return (
-          <div key={title} style={{ background: bg, padding: mobile ? `24px ${pad}px` : `32px ${pad}px 40px` }}>
+          <div key={title} style={{ background: bg, padding: '32px 40px 40px' }}>
             <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-              <h2 style={{ ...F, fontSize: mobile ? 18 : 22, fontWeight: 800, color: C.blue, margin: '0 0 16px' }}>{title}</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
+              <h2 style={{ ...F, fontSize: 22, fontWeight: 800, color: C.blue, margin: '0 0 16px' }}>{title}</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
                 {assets.map(a => {
                   const pos = portfolio.find(p => p.assetId === a.id);
                   const shares = pos ? Math.round(pos.investedAmount / a.pricePerUnit) : 0;
@@ -568,21 +551,21 @@ export default function PortfolioBuilder({
       })}
 
       {/* Action Buttons */}
-      <div style={{ background: C.white, padding: mobile ? '24px 16px 60px' : '40px 40px 80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+      <div style={{ background: C.white, padding: '40px 40px 80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
         <button
           onClick={handleAdvance}
           style={{
-            ...F, padding: mobile ? '13px 36px' : '14px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 10,
-            fontSize: mobile ? 15 : 16, fontWeight: 700, cursor: 'pointer',
+...F, padding: '14px 56px', background: C.creamy, color: C.buttonBlue, border: 'none', borderRadius: 10,
+              fontSize: 16, fontWeight: 700, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 10,
           }}
         >
           {midYearNewsSeen
-            ? 'Kinnita portfell ja jätka'
+            ? t.advConfirmPortfolio
             : nextYear <= 2035
-              ? `${t.advNextYearTo} ${nextYear}`
-              : t.advEndGame}
-          <RocketIcon color={C.buttonBlue} />
+              ? `${t.advNextYearTo} ${nextYear} →`
+              : `${t.advEndGame} →`}
+          <RocketIcon color="#fff" />
         </button>
         {!isFirstYear && (
           <button
@@ -592,7 +575,7 @@ export default function PortfolioBuilder({
               borderRadius: 10, fontSize: 14, fontWeight: 600, color: C.gray, cursor: 'pointer',
             }}
           >
-            Lõpeta portfell
+            {t.advEndPortfolio}
           </button>
         )}
       </div>

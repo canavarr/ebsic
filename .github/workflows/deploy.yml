@@ -27,7 +27,7 @@ jobs:
           else
             echo "Password protection: disabled (add VITE_ADVANCED_PASSWORD secret in repo Settings)"
           fi
-          VITE_BASE=/ebsic/ npm run build
+          VITE_BASE=/ npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  base: process.env.VITE_BASE || '/ebsic/',
+  base: process.env.VITE_BASE || '/',
   server: {
     port: 5176,
   },

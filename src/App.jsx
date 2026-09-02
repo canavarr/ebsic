@@ -1,23 +1,20 @@
-import { useState, useCallback } from 'react'
+import { lazy, Suspense, useState, useCallback } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { LangContext } from './contexts/LangContext'
-import AdvancedIndex from './advanced/pages/Index'
-import { LandingPage, ClassicGame, GameMasterLeaderboard } from './pages/classic'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 const LANG_KEY = 'ebsic_lang'
 
-function AdvancedGame() {
+const Landing = lazy(() => import('./pages/classic/Landing.jsx'))
+const ClassicGame = lazy(() => import('./pages/classic/ClassicGame.jsx'))
+const GameMasterLeaderboard = lazy(() => import('./pages/classic/GameMasterLeaderboard.jsx'))
+const AdvancedGame = lazy(() => import('./AdvancedGame.jsx'))
+
+function RouteFallback() {
   const location = useLocation()
-  const state = location.state || {}
-  const teamName = state.teamName || state.name || ''
-  const investors = state.investors || ''
-  return (
-    <TooltipProvider>
-      <AdvancedIndex initialTeamName={teamName || undefined} initialInvestors={investors} />
-    </TooltipProvider>
-  )
+  const path = (location.pathname || '').toLowerCase()
+  const isLanding = path === '/' || path === ''
+  return <div style={{ minHeight: '100vh', background: isLanding ? '#0B1D3F' : '#F0F2F7' }} />
 }
 
 export default function App() {
@@ -38,18 +35,22 @@ export default function App() {
   if (showGameMaster) {
     return (
       <LangContext.Provider value={{ lang, setLang }}>
-        <GameMasterLeaderboard />
+        <Suspense fallback={<div style={{ minHeight: '100vh', background: '#F0F2F7' }} />}>
+          <GameMasterLeaderboard />
+        </Suspense>
       </LangContext.Provider>
     )
   }
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/classic" element={<ClassicGame />} />
-        <Route path="/advanced" element={<ErrorBoundary><AdvancedGame /></ErrorBoundary>} />
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/classic" element={<ClassicGame />} />
+          <Route path="/advanced" element={<ErrorBoundary><AdvancedGame /></ErrorBoundary>} />
+        </Routes>
+      </Suspense>
     </LangContext.Provider>
   )
 }

@@ -1,8 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { lazy, Suspense, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PortfolioBuilder from '@/components/PortfolioBuilder';
 import EventsScreen from '@/components/EventsScreen';
-import SimulationResults from '@/components/SimulationResults';
 import MidYearNewsOverlay from '@/components/MidYearNewsOverlay';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import TeamNameInput from '@/components/TeamNameInput';
@@ -30,6 +29,8 @@ const YEARLY_ADDITION = 1000;
 const RESEARCH_COST = 1000;
 const TRANSACTION_FEE = 0.015; // 1.5%
 const MAX_TRADES_PER_YEAR = 10;
+
+const SimulationResults = lazy(() => import('@/components/SimulationResults'));
 
 const ADV_CATEGORY_BY_SECTOR: Record<Sector, 'ETFs' | 'Aktsiad' | 'Krüpto' | 'Varad'> = {
   ETF: 'ETFs',
@@ -420,6 +421,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
 
         {game.phase === 'final' && (
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 40px' }}>
+            <Suspense fallback={<div style={{ minHeight: 400 }} />}>
             <SimulationResults
               result={{
                 years: game.yearHistory,
@@ -435,6 +437,7 @@ const Index = ({ initialTeamName, initialInvestors = '' }: IndexProps) => {
               teamName={game.teamName}
               weeklySeed={seedRef.current}
             />
+            </Suspense>
           </div>
         )}
       </main>

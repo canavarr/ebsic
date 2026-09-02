@@ -1,13 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { C, F } from '../../lib/theme'
 import { useLang } from '../../contexts/LangContext'
 import { T } from '../../contexts/translations'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import EBSNavbar from '../../components/EBSNavbar'
-import { isPortfolioNameTaken } from '../../lib/classicLeaderboard'
 import { RocketIcon } from '../../components/classic/ClassicIcons'
 
-export default function Landing({ onStart, onStartAdvanced }) {
+export default function Landing() {
+  const navigate = useNavigate()
   const { lang } = useLang()
   const t = T[lang]
   const mobile = useIsMobile()
@@ -28,21 +29,22 @@ export default function Landing({ onStart, onStartAdvanced }) {
     setChecking(true)
     try {
       if (mode === 'algajale') {
+        const { isPortfolioNameTaken } = await import('../../lib/classicLeaderboard')
         const taken = await isPortfolioNameTaken(name)
         if (taken) {
           setNameError(t.formNameTaken)
           return
         }
-        onStart({ name, investors: inv })
+        navigate('/classic', { state: { name, investors: inv } })
       } else {
-        onStartAdvanced({ name, investors: inv })
+        navigate('/advanced', { state: { name, investors: inv, teamName: name } })
       }
     } catch (err) {
       console.warn('Name check failed, allowing through:', err)
       if (mode === 'algajale') {
-        onStart({ name, investors: inv })
+        navigate('/classic', { state: { name, investors: inv } })
       } else {
-        onStartAdvanced({ name, investors: inv })
+        navigate('/advanced', { state: { name, investors: inv, teamName: name } })
       }
     } finally {
       setChecking(false)

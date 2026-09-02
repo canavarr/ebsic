@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { C, F, formatCurrency } from '../../lib/theme'
+import { DonutChart } from '../DonutChart'
 import { useLang } from '../../contexts/LangContext'
 import { T } from '../../contexts/translations'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -28,6 +28,8 @@ export function Logo({ ticker, size = 46 }) {
         <img
           src={`${BASE}icons/${iconFile}.png`}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       </div>
@@ -93,13 +95,7 @@ export function Donut({ portfolio, use2025 = false, mobile, labels = {} }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? 16 : 24 }}>
       <div style={{ width: size, height: size, flexShrink: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={fi} cx="50%" cy="50%" innerRadius={ir} outerRadius={or} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
-              {fi.map((s, i) => <Cell key={i} fill={s.color || '#dde1ec'} />)}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+        <DonutChart segments={fi} size={size} innerRadius={ir} outerRadius={or} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {rows.map(s => (

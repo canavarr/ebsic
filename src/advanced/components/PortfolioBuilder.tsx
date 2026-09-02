@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ASSET_CATALOG } from '@/simulation/assets';
 import type { AssetDefinition, PortfolioHolding, Sector } from '@/simulation/types';
 import RiskMeter from '@/components/RiskMeter';
@@ -10,6 +9,7 @@ import { T } from '../../contexts/translations';
 import { getAssetDisplay } from '@/lib/assetDisplay';
 import { getSharedAssetVisual } from '../../data/sharedAssetMetadata';
 import { Logo } from '../../components/classic/ClassicShared';
+import { DonutChart } from '../../components/DonutChart';
 
 type AssetCategory = 'ETFs' | 'Aktsiad' | 'Krüptoraha' | 'Toorained';
 
@@ -68,13 +68,7 @@ function Donut({ segments }: { segments: { name: string; value: number; color: s
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
       <div style={{ width: 140, height: 140, flexShrink: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={44} outerRadius={62} dataKey="value" startAngle={90} endAngle={-270} strokeWidth={0}>
-              {data.map((s, i) => <Cell key={i} fill={s.color} />)}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+        <DonutChart segments={data} size={140} innerRadius={44} outerRadius={62} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {segments.map((seg, i) => {
